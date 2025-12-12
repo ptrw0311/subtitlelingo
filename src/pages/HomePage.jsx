@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { movieDB, vocabularyDB } from '../config/turso.js';
 
-// 假資料
-const fakeMovies = [
+// 備用假資料
+const fallbackMovies = [
   {
     id: 'tt0111161',
     title: 'The Shawshank Redemption',
@@ -116,7 +117,69 @@ function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('subtitle');
   const [selectedLevel, setSelectedLevel] = useState('all');
-  const [movies, setMovies] = useState(fakeMovies);
+  const [movies, setMovies] = useState([]);
+  const [vocabularies, setVocabularies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // 載入資料
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // 載入影片資料
+      const { data: moviesData, error: moviesError } = await movieDB.getAll(20);
+      if (moviesError) {
+        throw moviesError;
+      }
+
+      // 載入生字資料
+      const { data: vocabData, error: vocabError } = await vocabularyDB.getAll();
+      if (vocabError) {
+        throw vocabError;
+      }
+
+      setMovies(moviesData.length > 0 ? moviesData : fallbackMovies);
+      setVocabularies(vocabData);
+
+      console.log(`📊 載入 ${moviesData.length} 部影片，${vocabData.length} 個生字`);
+
+    } catch (err) {
+      console.error('載入資料失敗:', err);
+      setError('載入資料失敗，顯示示範資料');
+      // 使用備用資料
+      setMovies(fallbackMovies);
+      setVocabularies(fakeVocabularies);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 搜尋影片
+  const handleSearch = async (query) => {
+    setSearchQuery(query);
+
+    if (query.trim()) {
+      try {
+        const { data: searchResults, error } = await movieDB.search(query.trim());
+        if (error) {
+          throw error;
+        }
+        setMovies(searchResults);
+      } catch (err) {
+        console.error('搜尋失敗:', err);
+        // 使用本端過濾
+      }
+    } else {
+      // 重新載入所有資料
+      loadData();
+    }
+  };
 
   // 過濾電影
   const filteredMovies = movies.filter(movie =>
@@ -124,7 +187,7 @@ function HomePage() {
   );
 
   // 過濾生字
-  const filteredVocabularies = fakeVocabularies.filter(vocab =>
+  const filteredVocabularies = vocabularies.filter(vocab =>
     selectedLevel === 'all' || vocab.level === selectedLevel
   );
 
@@ -146,7 +209,7 @@ function HomePage() {
                 type="text"
                 placeholder="🔍 搜尋影片..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
@@ -154,9 +217,45 @@ function HomePage() {
 
           {/* 影片列表 */}
           <div>
-            <h2 className="text-lg font-semibold mb-4 text-slate-300">熱門影片</h2>
-            <div className="space-y-3">
-              {filteredMovies.map((movie) => (
+            <h2 className="text-lg font-semibold mb-4 text-slate-300">
+              熱門影片
+              {loading && <span className="text-xs text-slate-500 ml-2">載入中...</span>}
+            </h2>
+
+            {/* 錯誤提示 */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-600/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
+                ⚠️ {error}
+              </div>
+            )}
+
+            {/* 載入狀態 */}
+            {loading && (
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="p-3 rounded-lg bg-slate-800/30 animate-pulse">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-slate-700 rounded"></div>
+                      <div className="flex-1">
+                        <div className="h-4 bg-slate-700 rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-slate-700 rounded w-1/4"></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+
+            {/* 影片列表 */}
+            {!loading && (
+              <div className="space-y-3">
+                {filteredMovies.length === 0 ? (
+                  <div className="text-center py-8 text-slate-400">
+                    <div className="text-4xl mb-2">🔍</div>
+                    <p>找不到符合的影片</p>
+                  </div>
+                ) : (
+                  filteredMovies.map((movie) => (
                 <div
                   key={movie.id}
                   onClick={() => setSelectedMovie(movie)}
@@ -179,8 +278,10 @@ function HomePage() {
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              ))
+                )}
+              </div>
+            )}
           </div>
         </div>
       </aside>

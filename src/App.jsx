@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './styles/global.css';
+import './utils/dbTest.js'; // 測試 Turso 連線
 import HomePage from './pages/HomePage';
 import PracticePage from './pages/PracticePage';
 import StatsPage from './pages/StatsPage';
