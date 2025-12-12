@@ -244,7 +244,7 @@ function HomePage() {
                   </div>
                 ))}
               </div>
-            ))}
+            )}
 
             {/* 影片列表 */}
             {!loading && (
