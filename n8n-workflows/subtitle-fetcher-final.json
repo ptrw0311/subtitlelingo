@@ -1,0 +1,70 @@
+{
+  "name": "Subtitle Fetcher Final",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "subtitle-fetcher-final",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-final",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "subtitle-fetcher-final"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 獲取輸入數據\nconst items = $input.all();\nconst firstItem = items[0];\nconst jsonData = firstItem.json;\n\n// 獲取 body\nlet body = jsonData.body || jsonData || {};\n\n// 根據 endpoint 處理\nconst endpoint = body.endpoint || '';\n\n// 創建結果對象\nconst result = {\n  json: {\n    success: true,\n    endpoint: endpoint,\n    received_data: body,\n    debug_info: {\n      has_body: !!jsonData.body,\n      body_keys: Object.keys(body || {}),\n      json_data_keys: Object.keys(jsonData || {})\n    },\n    message: `接收到請求: ${endpoint}`\n  }\n};\n\n// 如果是熱門影片請求\nif (endpoint === '/movies/popular') {\n  result.json.data = [\n    { id: 1, title: '測試電影 1', year: 2023, imdb_id: 'tt1234567' },\n    { id: 2, title: '測試電影 2', year: 2022, imdb_id: 'tt7654321' }\n  ];\n  result.json.message = '熱門影片抓取成功（測試數據）';\n}\n// 如果是搜尋請求\nelse if (endpoint === '/movies/search') {\n  result.json.query = body.query || '';\n  result.json.data = [\n    { id: 3, title: `搜尋結果: ${body.query}`, year: 2021, imdb_id: 'tt1111111' }\n  ];\n  result.json.message = '影片搜尋成功（測試數據）';\n}\n\n// 返回結果 - 注意：這裡直接返回 result\nreturn result;"
+      },
+      "id": "code-final",
+      "name": "Process Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "response-final",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Process Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Request": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

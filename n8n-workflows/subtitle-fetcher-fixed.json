@@ -1,0 +1,573 @@
+{
+  "name": "Subtitle Fetcher - Fixed",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "subtitle-fetcher",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "49e949fd-9cf3-4503-95b5-f777fa3b39f5",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [-720, 720],
+      "webhookId": "subtitle-fetcher"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.body.endpoint}}",
+              "value2": "/movies/popular"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "eed8ac70-833d-4972-b9dd-e6ef648737c5",
+      "name": "Is Popular Movies?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [-512, 512]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.body.endpoint}}",
+              "value2": "/movies/search"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "20d9ece6-7c4c-437e-af17-77f004f1cb73",
+      "name": "Is Search Movies?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [-512, 720]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.body.endpoint}}",
+              "value2": "/subtitles/fetch"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "47e7fdad-f8a1-4eb1-b22e-ad9dcb1db8e8",
+      "name": "Is Fetch Subtitles?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [-512, 912]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.body.endpoint}}",
+              "operation": "contains",
+              "value2": "/analyze"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "960a907d-6bfe-45bd-922d-6c141bcc0a20",
+      "name": "Is Analyze Movie?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [-512, 1120]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.opensubtitles.com/api/v1/find",
+        "options": {
+          "headers": {
+            "headers": [
+              {
+                "name": "User-Agent",
+                "value": "SubtitleLingo v1.0"
+              },
+              {
+                "name": "X-Api-Key",
+                "value": "vSuOAURoDGadtGk6End40nf6Eah0bVOF"
+              },
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "qs": {
+            "qs": [
+              {
+                "name": "order_by",
+                "value": "desc"
+              },
+              {
+                "name": "order_by__values",
+                "value": "download_count"
+              }
+            ]
+          }
+        }
+      },
+      "id": "376666d9-f1ae-4a21-8c74-b4017611ce08",
+      "name": "Fetch Popular Movies",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [-320, 512]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.opensubtitles.com/api/v1/find",
+        "options": {
+          "headers": {
+            "headers": [
+              {
+                "name": "User-Agent",
+                "value": "SubtitleLingo v1.0"
+              },
+              {
+                "name": "X-Api-Key",
+                "value": "vSuOAURoDGadtGk6End40nf6Eah0bVOF"
+              },
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "qs": {
+            "qs": [
+              {
+                "name": "query",
+                "value": "={{$json.body.query}}"
+              },
+              {
+                "name": "page",
+                "value": "={{$json.body.page || 1}}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "99901a0b-55a8-4dfd-850c-e397ef8d8825",
+      "name": "Search Movies",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [-320, 720]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.opensubtitles.com/api/v1/subtitles",
+        "options": {
+          "headers": {
+            "headers": [
+              {
+                "name": "User-Agent",
+                "value": "SubtitleLingo v1.0"
+              },
+              {
+                "name": "X-Api-Key",
+                "value": "vSuOAURoDGadtGk6End40nf6Eah0bVOF"
+              },
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "qs": {
+            "qs": [
+              {
+                "name": "imdb_id",
+                "value": "={{$json.body.imdb_id}}"
+              },
+              {
+                "name": "languages",
+                "value": "={{$json.body.language || 'en'}}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "7a97d33b-1acd-4031-aa96-1ba7d109ed47",
+      "name": "Fetch Subtitles from OpenSubtitles",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [-320, 912]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 解析字幕內容\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const data = item.json;\n  \n  // 如果是字幕搜尋結果\n  if (data.data && Array.isArray(data.data)) {\n    // 找到最佳字幕（評分最高的）\n    const bestSubtitle = data.data.reduce((best, current) => {\n      if (!best || (current.rating && current.rating > (best.rating || 0))) {\n        return current;\n      }\n      return best;\n    }, null);\n    \n    if (bestSubtitle && bestSubtitle.attributes) {\n      results.push({\n        subtitle_id: bestSubtitle.id,\n        file_id: bestSubtitle.attributes.files[0]?.file_id,\n        feature_id: bestSubtitle.attributes.feature_id,\n        imdb_id: bestSubtitle.attributes.feature_details?.imdb_id,\n        language: bestSubtitle.attributes.language,\n        rating: bestSubtitle.attributes.rating,\n        download_count: bestSubtitle.attributes.download_count,\n        fps: bestSubtitle.attributes.fps,\n        release: bestSubtitle.attributes.release\n      });\n    }\n  }\n}\n\nreturn results;"
+      },
+      "id": "931d8a96-daa9-4fbe-a73b-f44b2c8b2c5a",
+      "name": "Parse Subtitle Info",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-112, 912]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.opensubtitles.com/api/v1/download",
+        "options": {
+          "headers": {
+            "headers": [
+              {
+                "name": "User-Agent",
+                "value": "SubtitleLingo v1.0"
+              },
+              {
+                "name": "X-Api-Key",
+                "value": "vSuOAURoDGadtGk6End40nf6Eah0bVOF"
+              },
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "qs": {
+            "qs": [
+              {
+                "name": "file_id",
+                "value": "={{$json.file_id}}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "1c9943ca-ee69-42a3-b56a-a4e87a2e2708",
+      "name": "Download Subtitle File",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [96, 912]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 解析 SRT 字幕內容\nconst items = $input.all();\nconst results = [];\n\nfunction parseSRT(srtContent) {\n  const lines = srtContent.split('\\n');\n  const entries = [];\n  let currentEntry = null;\n  \n  for (let i = 0; i < lines.length; i++) {\n    const line = lines[i].trim();\n    \n    // 序號行\n    if (/^\\d+$/.test(line)) {\n      if (currentEntry) {\n        entries.push(currentEntry);\n      }\n      currentEntry = {\n        index: parseInt(line),\n        startTime: '',\n        endTime: '',\n        text: ''\n      };\n    }\n    // 時間行\n    else if (line.includes(' --> ')) {\n      if (currentEntry) {\n        const [start, end] = line.split(' --> ');\n        currentEntry.startTime = start;\n        currentEntry.endTime = end;\n      }\n    }\n    // 文字行\n    else if (line && currentEntry) {\n      if (currentEntry.text) {\n        currentEntry.text += ' ' + line;\n      } else {\n        currentEntry.text = line;\n      }\n    }\n  }\n  \n  if (currentEntry) {\n    entries.push(currentEntry);\n  }\n  \n  return entries;\n}\n\nfor (const item of items) {\n  const data = item.json;\n  \n  if (data.link) {\n    // 下載字幕內容\n    const response = await fetch(data.link);\n    const srtContent = await response.text();\n    \n    // 解析 SRT\n    const entries = parseSRT(srtContent);\n    \n    // 清理文字（移除 HTML 標籤）\n    entries.forEach(entry => {\n      entry.text = entry.text.replace(/<[^>]*>/g, '').trim();\n    });\n    \n    results.push({\n      imdb_id: data.imdb_id || $('Webhook Trigger').item.json.body.imdb_id,\n      language: data.language || 'en',\n      entries: entries,\n      total_entries: entries.length,\n      content: srtContent\n    });\n  }\n}\n\nreturn results;"
+      },
+      "id": "0a3131bd-dff7-47af-969d-8b2517bf8bdb",
+      "name": "Parse SRT Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [288, 912]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://subtitlelingo-peterwang.aws-ap-northeast-1.turso.io/v2/pipeline",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NjU1MjcyNTQsImlkIjoiOTY0ZjBjMjMtMTEzYi00YjEwLTg3N2UtM2I2NjVhNmYyYjg3IiwicmlkIjoiNzEyZmJhNmQtODY4YS00ZGU2LTg5NTEtNDNlOWExY2UyNzA3In0.w228JKt8eUFbWMoeKKQOwWsZGL1lkvOJ5Ho9_mbf2n34_IZrpakq69VoB4jtPN1I9-ZEbOMio3Xyb2A-pJ--CA"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "statements",
+              "value": "=[\n  {\n    \"q\": \"INSERT OR REPLACE INTO movies (imdb_id, title, year, created_at) VALUES (?, ?, ?, ?)\",\n    \"params\": [\n      \"{{ $json.imdb_id }}\",\n      \"{{ $('Webhook Trigger').item.json.body.title || '' }}\",\n      \"{{ $('Webhook Trigger').item.json.body.year || '' }}\",\n      \"{{ new Date().toISOString() }}\"\n    ]\n  },\n  {\n    \"q\": \"DELETE FROM subtitles WHERE movie_id = ?\",\n    \"params\": [\"{{ $json.imdb_id }}\"]\n  },\n  {\n    \"q\": \"INSERT INTO subtitles (movie_id, sequence_number, start_time, end_time, text, created_at) VALUES \",\n    \"batch\": \"{{ $json.entries.map((e, i) => `('${$json.imdb_id}', ${e.index}, '${e.startTime}', '${e.endTime}', '${e.text.replace(/'/g, \"''\")}', '${new Date().toISOString()}')`).join(',') }}\"\n  }\n]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bf19c1f3-054d-42a9-981b-c194c7832b67",
+      "name": "Save to Turso DB",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [496, 912]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{{\n  \"success\": true,\n  \"data\": {\n    \"imdb_id\": $json.imdb_id,\n    \"language\": $json.language,\n    \"entries_count\": $json.total_entries,\n    \"message\": \"字幕抓取並儲存成功\"\n  }\n}}}",
+        "options": {}
+      },
+      "id": "55b7aadb-19a5-44b1-b555-0181c252f0fe",
+      "name": "Response - Subtitle",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [688, 912]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{{\n  \"success\": true,\n  \"data\": $json.data || [],\n  \"page\": $('Webhook Trigger').item.json.body.page || 1,\n  \"message\": \"熱門影片抓取成功\"\n}}}",
+        "options": {}
+      },
+      "id": "f0872e9c-a293-497b-8db0-75d2f10c393f",
+      "name": "Response - Popular",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [-112, 512]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{{\n  \"success\": true,\n  \"data\": $json.data || [],\n  \"query\": $('Webhook Trigger').item.json.body.query,\n  \"page\": $('Webhook Trigger').item.json.body.page || 1,\n  \"message\": \"影片搜尋成功\"\n}}}",
+        "options": {}
+      },
+      "id": "b6930600-d7a3-47c9-b2ed-0d0397d229be",
+      "name": "Response - Search",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [-112, 720]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://subtitlelingo-peterwang.aws-ap-northeast-1.turso.io/v2/pipeline",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NjU1MjcyNTQsImlkIjoiOTY0ZjBjMjMtMTEzYi00YjEwLTg3N2UtM2I2NjVhNmYyYjg3IiwicmlkIjoiNzEyZmJhNmQtODY4YS00ZGU2LTg5NTEtNDNlOWExY2UyNzA3In0.w228JKt8eUFbWMoeKKQOwWsZGL1lkvOJ5Ho9_mbf2n34_IZrpakq69VoB4jtPN1I9-ZEbOMio3Xyb2A-pJ--CA"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "statements",
+              "value": "=[\n  {\n    \"q\": \"SELECT s.* FROM subtitles s WHERE s.movie_id = ? ORDER BY s.sequence_number\",\n    \"params\": [\"{{ $('Webhook Trigger').item.json.body.imdb_id }}\"]\n  }\n]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "061ea5a6-bf78-4a38-97d4-d1f1bc8a1136",
+      "name": "Fetch Subtitles from Turso",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [-320, 1120]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 分析字幕統計資訊\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const data = item.json;\n  \n  if (data.results && Array.isArray(data.results[0]?.results)) {\n    const subtitles = data.results[0].results;\n    \n    // 統計分析\n    const totalWords = subtitles.reduce((sum, s) => {\n      return sum + s.text.split(' ').filter(w => w).length;\n    }, 0);\n    \n    const uniqueWords = new Set();\n    subtitles.forEach(s => {\n      s.text.split(' ').forEach(w => {\n        if (w) uniqueWords.add(w.toLowerCase());\n      });\n    });\n    \n    // 找出最長的對話\n    const longestDialogue = subtitles.reduce((longest, current) => {\n      return current.text.length > (longest?.text?.length || 0) ? current : longest;\n    }, null);\n    \n    // 詞頻統計\n    const wordFreq = {};\n    subtitles.forEach(s => {\n      s.text.split(' ').forEach(w => {\n        if (w) {\n          const word = w.toLowerCase().replace(/[^a-zA-Z]/g, '');\n          if (word) {\n            wordFreq[word] = (wordFreq[word] || 0) + 1;\n          }\n        }\n      });\n    });\n    \n    const sortedWords = Object.entries(wordFreq)\n      .sort((a, b) => b[1] - a[1])\n      .slice(0, 20);\n    \n    results.push({\n      imdb_id: $('Webhook Trigger').item.json.body.imdb_id,\n      statistics: {\n        total_subtitles: subtitles.length,\n        total_words: totalWords,\n        unique_words: uniqueWords.size,\n        vocabulary_diversity: (uniqueWords.size / totalWords).toFixed(2),\n        average_words_per_subtitle: (totalWords / subtitles.length).toFixed(1),\n        longest_dialogue: longestDialogue?.text || ''\n      },\n      common_words: sortedWords,\n      subtitles: subtitles.slice(0, 10) // 回傳前10個字幕作為範例\n    });\n  }\n}\n\nreturn results;"
+      },
+      "id": "2b886e86-98d2-4fd1-bddb-d5fefb48aaab",
+      "name": "Analyze Subtitles",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-112, 1120]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{{\n  \"success\": true,\n  \"data\": {\n    \"imdb_id\": $json.imdb_id,\n    \"statistics\": $json.statistics,\n    \"common_words\": $json.common_words,\n    \"sample_subtitles\": $json.subtitles\n  },\n  \"message\": \"影片分析完成\"\n}}}",
+        "options": {}
+      },
+      "id": "bf535a78-54a0-428c-b729-58b556ef78d9",
+      "name": "Response - Analyze",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [96, 1120]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is Popular Movies?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Is Search Movies?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Is Fetch Subtitles?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Is Analyze Movie?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Popular Movies?": {
+      "main": [
+        [
+          {
+            "node": "Fetch Popular Movies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Search Movies?": {
+      "main": [
+        [
+          {
+            "node": "Search Movies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Fetch Subtitles?": {
+      "main": [
+        [
+          {
+            "node": "Fetch Subtitles from OpenSubtitles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Analyze Movie?": {
+      "main": [
+        [
+          {
+            "node": "Fetch Subtitles from Turso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Popular Movies": {
+      "main": [
+        [
+          {
+            "node": "Response - Popular",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Movies": {
+      "main": [
+        [
+          {
+            "node": "Response - Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Subtitles from OpenSubtitles": {
+      "main": [
+        [
+          {
+            "node": "Parse Subtitle Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Subtitle Info": {
+      "main": [
+        [
+          {
+            "node": "Download Subtitle File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Subtitle File": {
+      "main": [
+        [
+          {
+            "node": "Parse SRT Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse SRT Content": {
+      "main": [
+        [
+          {
+            "node": "Save to Turso DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Turso DB": {
+      "main": [
+        [
+          {
+            "node": "Response - Subtitle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Subtitles from Turso": {
+      "main": [
+        [
+          {
+            "node": "Analyze Subtitles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Subtitles": {
+      "main": [
+        [
+          {
+            "node": "Response - Analyze",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6a385f50-b062-4d21-96d3-9cdc9f428efc",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "6UxU8FFEtzcK00sF",
+  "tags": []
+}

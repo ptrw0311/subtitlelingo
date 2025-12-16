@@ -1,0 +1,302 @@
+{
+  "name": "Subtitle Fetcher V2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "subtitle-fetcher-v2",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true,
+          "jsonBody": true
+        }
+      },
+      "id": "webhook-1",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "subtitle-fetcher-v2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 解析請求數據並路由\nconst inputData = $input.first();\nconst body = inputData.json.body || inputData.json || {};\n\nconsole.log('Request body:', JSON.stringify(body, null, 2));\n\n// 將原始 body 傳遞給後續節點\nreturn [{\n  json: {\n    ...inputData.json,\n    parsedBody: body,\n    endpoint: body.endpoint,\n    query: body.query,\n    page: body.page,\n    imdb_id: body.imdb_id,\n    language: body.language\n  }\n}];"
+      },
+      "id": "parse-1",
+      "name": "Parse Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.parsedBody.endpoint }}",
+              "rightValue": "/movies/popular",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-1",
+      "name": "Is Popular Movies?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.parsedBody.endpoint }}",
+              "rightValue": "/movies/search",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-2",
+      "name": "Is Search Movies?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.opensubtitles.com/api/v1/find",
+        "options": {
+          "headers": {
+            "headers": [
+              {
+                "name": "User-Agent",
+                "value": "SubtitleLingo v1.0"
+              },
+              {
+                "name": "X-Api-Key",
+                "value": "vSuOAURoDGadtGk6End40nf6Eah0bVOF"
+              },
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "qs": {
+            "qs": [
+              {
+                "name": "order_by",
+                "value": "desc"
+              },
+              {
+                "name": "order_by__values",
+                "value": "download_count"
+              },
+              {
+                "name": "page",
+                "value": "={{ $json.parsedBody.page || 1 }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "fetch-1",
+      "name": "Fetch Popular Movies",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.opensubtitles.com/api/v1/find",
+        "options": {
+          "headers": {
+            "headers": [
+              {
+                "name": "User-Agent",
+                "value": "SubtitleLingo v1.0"
+              },
+              {
+                "name": "X-Api-Key",
+                "value": "vSuOAURoDGadtGk6End40nf6Eah0bVOF"
+              },
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "qs": {
+            "qs": [
+              {
+                "name": "query",
+                "value": "={{ $json.parsedBody.query }}"
+              },
+              {
+                "name": "page",
+                "value": "={{ $json.parsedBody.page || 1 }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "fetch-2",
+      "name": "Search Movies",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{{\n  \"success\": true,\n  \"data\": $json.data || [],\n  \"page\": $('Parse Request').item.json.parsedBody.page || 1,\n  \"message\": \"熱門影片抓取成功\"\n}}}",
+        "options": {}
+      },
+      "id": "resp-1",
+      "name": "Response - Popular",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{{\n  \"success\": true,\n  \"data\": $json.data || [],\n  \"query\": $('Parse Request').item.json.parsedBody.query,\n  \"page\": $('Parse Request').item.json.parsedBody.page || 1,\n  \"message\": \"影片搜尋成功\"\n}}}",
+        "options": {}
+      },
+      "id": "resp-2",
+      "name": "Response - Search",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{{\n  \"success\": false,\n  \"error\": \"Unknown endpoint\",\n  \"received_body\": $('Parse Request').item.json.parsedBody,\n  \"message\": \"請檢查請求的 endpoint 參數\"\n}}}",
+        "options": {}
+      },
+      "id": "resp-error",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 400]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Request": {
+      "main": [
+        [
+          {
+            "node": "Is Popular Movies?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Is Search Movies?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Popular Movies?": {
+      "main": [
+        [
+          {
+            "node": "Fetch Popular Movies",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Search Movies?": {
+      "main": [
+        [
+          {
+            "node": "Search Movies",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Popular Movies": {
+      "main": [
+        [
+          {
+            "node": "Response - Popular",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Movies": {
+      "main": [
+        [
+          {
+            "node": "Response - Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicyDefaultOption": "workflowsFromSameOwner"
+  },
+  "tags": []
+}

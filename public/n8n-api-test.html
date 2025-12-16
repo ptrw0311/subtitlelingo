@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>n8n Subtitle Fetcher API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #666;
+            border-bottom: 2px solid #ff6200;
+            padding-bottom: 10px;
+        }
+        .input-group {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        input[type="text"], input[type="number"], select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+            margin-right: 10px;
+        }
+        button {
+            background-color: #ff6200;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #e55100;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+        .success {
+            background-color: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            color: #1b5e20;
+        }
+        .error {
+            background-color: #ffebee;
+            border: 1px solid #ffcdd2;
+            color: #c62828;
+        }
+        .info {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            color: #0d47a1;
+        }
+        .url-display {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        .note {
+            background-color: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 10px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .loading {
+            display: inline-block;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 n8n Subtitle Fetcher API 測試</h1>
+
+    <div class="note">
+        <strong>注意：</strong>請先確保您的 n8n 工作流程已經匯入並啟動。
+    </div>
+
+    <div class="container">
+        <h2>⚙️ 設定</h2>
+        <div class="input-group">
+            <label>n8n Webhook URL:</label>
+            <input type="text" id="n8n-url" value="https://ptrw0311-n8n-free.hf.space/webhook/subtitle-fetcher" placeholder="輸入您的 n8n Webhook URL">
+        </div>
+        <button onclick="updateBaseUrl()">更新 URL</button>
+    </div>
+
+    <div class="container">
+        <h2>🔥 熱門影片</h2>
+        <div class="input-group">
+            <label>頁數:</label>
+            <input type="number" id="popular-page" value="1" min="1" max="10">
+            <button onclick="fetchPopularMovies()">取得熱門影片</button>
+        </div>
+        <div id="popular-result" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>🔍 搜尋影片</h2>
+        <div class="input-group">
+            <label>關鍵字:</label>
+            <input type="text" id="search-query" value="Inception" placeholder="輸入影片名稱">
+        </div>
+        <div class="input-group">
+            <label>頁數:</label>
+            <input type="number" id="search-page" value="1" min="1" max="10">
+            <button onclick="searchMovies()">搜尋影片</button>
+        </div>
+        <div id="search-result" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>📝 抓取字幕</h2>
+        <div class="input-group">
+            <label>IMDb ID:</label>
+            <input type="text" id="subtitle-imdb" value="tt1375666" placeholder="例如: tt1375666">
+        </div>
+        <div class="input-group">
+            <label>語言:</label>
+            <select id="subtitle-lang">
+                <option value="en">English</option>
+                <option value="zh">Chinese</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+            </select>
+            <button onclick="fetchSubtitles()">抓取字幕</button>
+        </div>
+        <div id="subtitle-result" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>📊 分析影片</h2>
+        <div class="input-group">
+            <label>IMDb ID:</label>
+            <input type="text" id="analyze-imdb" value="tt1375666" placeholder="例如: tt1375666">
+            <button onclick="analyzeMovie()">分析影片</button>
+        </div>
+        <div id="analyze-result" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>📋 請求日誌</h2>
+        <button onclick="clearLog()">清除日誌</button>
+        <div id="log-container" style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px;"></div>
+    </div>
+
+    <script>
+        let API_BASE_URL = 'https://ptrw0311-n8n-free.hf.space/webhook/subtitle-fetcher';
+
+        function updateBaseUrl() {
+            API_BASE_URL = document.getElementById('n8n-url').value;
+            log(`✅ Webhook URL 已更新: ${API_BASE_URL}`);
+        }
+
+        function log(message) {
+            const logContainer = document.getElementById('log-container');
+            const timestamp = new Date().toLocaleTimeString();
+            logContainer.innerHTML += `[${timestamp}] ${message}\n`;
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log-container').innerHTML = '';
+        }
+
+        function showResult(elementId, result, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${isError ? 'error' : 'success'}`;
+            element.textContent = JSON.stringify(result, null, 2);
+        }
+
+        function showInfo(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = 'result info';
+            element.textContent = message;
+        }
+
+        async function makeRequest(data) {
+            const startTime = Date.now();
+            log(`📤 發送請求: ${JSON.stringify(data)}`);
+
+            try {
+                const response = await fetch(API_BASE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const responseTime = Date.now() - startTime;
+                log(`📥 收到回應 (${responseTime}ms): HTTP ${response.status}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP 錯誤: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                log(`✅ 請求成功`);
+                return result;
+            } catch (error) {
+                const responseTime = Date.now() - startTime;
+                log(`❌ 請求失敗 (${responseTime}ms): ${error.message}`);
+                throw error;
+            }
+        }
+
+        async function fetchPopularMovies() {
+            const page = document.getElementById('popular-page').value;
+            showInfo('popular-result', `正在取得第 ${page} 頁熱門影片...`);
+
+            try {
+                const result = await makeRequest({
+                    endpoint: '/movies/popular',
+                    page: parseInt(page)
+                });
+                showResult('popular-result', result);
+                log(`🎬 取得 ${result.data?.length || 0} 部熱門影片`);
+            } catch (error) {
+                showResult('popular-result', { error: error.message }, true);
+            }
+        }
+
+        async function searchMovies() {
+            const query = document.getElementById('search-query').value;
+            const page = document.getElementById('search-page').value;
+            showInfo('search-result', `正在搜尋 "${query}" 第 ${page} 頁...`);
+
+            try {
+                const result = await makeRequest({
+                    endpoint: '/movies/search',
+                    query,
+                    page: parseInt(page)
+                });
+                showResult('search-result', result);
+                log(`🔍 找到 ${result.data?.length || 0} 部相關影片`);
+            } catch (error) {
+                showResult('search-result', { error: error.message }, true);
+            }
+        }
+
+        async function fetchSubtitles() {
+            const imdbId = document.getElementById('subtitle-imdb').value;
+            const language = document.getElementById('subtitle-lang').value;
+            showInfo('subtitle-result', `正在抓取字幕 ${imdbId} (${language})...`);
+
+            try {
+                const result = await makeRequest({
+                    endpoint: '/subtitles/fetch',
+                    imdb_id: imdbId,
+                    language
+                });
+                showResult('subtitle-result', result);
+                if (result.success) {
+                    log(`📝 成功抓取 ${result.data.entries_count || 0} 條字幕`);
+                }
+            } catch (error) {
+                showResult('subtitle-result', { error: error.message }, true);
+            }
+        }
+
+        async function analyzeMovie() {
+            const imdbId = document.getElementById('analyze-imdb').value;
+            showInfo('analyze-result', `正在分析影片 ${imdbId}...`);
+
+            try {
+                const result = await makeRequest({
+                    endpoint: `/movies/${imdbId}/analyze`
+                });
+                showResult('analyze-result', result);
+                if (result.success && result.data.statistics) {
+                    log(`📊 分析完成：${result.data.statistics.total_subtitles} 條字幕，${result.data.statistics.unique_words} 個單詞`);
+                }
+            } catch (error) {
+                showResult('analyze-result', { error: error.message }, true);
+            }
+        }
+
+        // 頁面載入時的初始化
+        window.onload = function() {
+            log('🚀 n8n API 測試頁面已載入');
+            log('💡 請先更新您的 n8n Webhook URL');
+
+            // 檢查是否有本地儲存的 URL
+            const savedUrl = localStorage.getItem('n8n-webhook-url');
+            if (savedUrl) {
+                document.getElementById('n8n-url').value = savedUrl;
+                API_BASE_URL = savedUrl;
+                log(`📌 已載入儲存的 URL: ${savedUrl}`);
+            }
+        };
+
+        // 儲存 URL 到本地儲存
+        document.getElementById('n8n-url').addEventListener('change', function(e) {
+            localStorage.setItem('n8n-webhook-url', e.target.value);
+        });
+    </script>
+</body>
+</html>

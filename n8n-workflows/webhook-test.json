@@ -1,0 +1,76 @@
+{
+  "name": "Webhook Test",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "test-webhook",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "webhook-test-1",
+      "name": "Webhook Test",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "test-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 測試接收到的資料\nconst inputData = $input.first();\nconsole.log('Full input:', JSON.stringify(inputData, null, 2));\n\nconst result = {\n  received_at: new Date().toISOString(),\n  headers: inputData.json.headers || {},
+   query: inputData.json.query || {},
+n  body: inputData.json.body || inputData.json || {},
+n  rawBody: inputData.json.body || 'undefined',
+n  fullJson: inputData.json\n};\n\nreturn [result];"
+      },
+      "id": "code-test-1",
+      "name": "Debug Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "response-test-1",
+      "name": "Test Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Test": {
+      "main": [
+        [
+          {
+            "node": "Debug Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Debug Input": {
+      "main": [
+        [
+          {
+            "node": "Test Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
