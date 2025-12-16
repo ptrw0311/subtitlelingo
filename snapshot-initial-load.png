@@ -1,0 +1,177 @@
+uid=1_0 RootWebArea "SubtitleLingo - 影視英文字幕學習平台" url="http://localhost:5175/"
+  uid=1_1 StaticText "🎬"
+  uid=1_2 StaticText "SubtitleLingo"
+  uid=1_3 StaticText "載入中..."
+  uid=1_4 StaticText "[plugin:vite:react-babel] "
+  uid=1_5 StaticText "D:\vscode\SubtitleLingo\src\pages\HomePage.jsx: Unexpected token, expected "}" (247:13)
+  250 |             {!loading && ("
+  uid=1_6 StaticText "D:"
+  uid=1_7 StaticText "/vscode/SubtitleLingo/src/pages/HomePage.jsx:247:13"
+  uid=1_8 StaticText "245 |                  ))}
+246 |                </div>
+247 |              ))}
+    |               ^
+248 |  
+249 |              {/* 影片列表 */}"
+  uid=1_9 StaticText "    at constructor ("
+  uid=1_10 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:367:19"
+  uid=1_11 StaticText ")
+    at JSXParserMixin.raise ("
+  uid=1_12 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:6624:19"
+  uid=1_13 StaticText ")
+    at JSXParserMixin.unexpected ("
+  uid=1_14 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:6644:16"
+  uid=1_15 StaticText ")
+    at JSXParserMixin.expect ("
+  uid=1_16 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:6924:12"
+  uid=1_17 StaticText ")
+    at JSXParserMixin.jsxParseExpressionContainer ("
+  uid=1_18 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:4666:10"
+  uid=1_19 StaticText ")
+    at JSXParserMixin.jsxParseElementAt ("
+  uid=1_20 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:4740:36"
+  uid=1_21 StaticText ")
+    at JSXParserMixin.jsxParseElementAt ("
+  uid=1_22 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:4727:32"
+  uid=1_23 StaticText ")
+    at JSXParserMixin.jsxParseElementAt ("
+  uid=1_24 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:4727:32"
+  uid=1_25 StaticText ")
+    at JSXParserMixin.jsxParseElementAt ("
+  uid=1_26 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:4727:32"
+  uid=1_27 StaticText ")
+    at JSXParserMixin.jsxParseElement ("
+  uid=1_28 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:4778:17"
+  uid=1_29 StaticText ")
+    at JSXParserMixin.parseExprAtom ("
+  uid=1_30 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:4788:19"
+  uid=1_31 StaticText ")
+    at JSXParserMixin.parseExprSubscripts ("
+  uid=1_32 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:11145:23"
+  uid=1_33 StaticText ")
+    at JSXParserMixin.parseUpdate ("
+  uid=1_34 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:11130:21"
+  uid=1_35 StaticText ")
+    at JSXParserMixin.parseMaybeUnary ("
+  uid=1_36 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:11110:23"
+  uid=1_37 StaticText ")
+    at JSXParserMixin.parseMaybeUnaryOrPrivate ("
+  uid=1_38 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:10963:61"
+  uid=1_39 StaticText ")
+    at JSXParserMixin.parseExprOps ("
+  uid=1_40 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:10968:23"
+  uid=1_41 StaticText ")
+    at JSXParserMixin.parseMaybeConditional ("
+  uid=1_42 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:10945:23"
+  uid=1_43 StaticText ")
+    at JSXParserMixin.parseMaybeAssign ("
+  uid=1_44 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:10895:21"
+  uid=1_45 StaticText ")
+    at "
+  uid=1_46 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:10864:39"
+  uid=1_47 StaticText "
+    at JSXParserMixin.allowInAnd ("
+  uid=1_48 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:12500:12"
+  uid=1_49 StaticText ")
+    at JSXParserMixin.parseMaybeAssignAllowIn ("
+  uid=1_50 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:10864:17"
+  uid=1_51 StaticText ")
+    at JSXParserMixin.parseMaybeAssignAllowInOrVoidPattern ("
+  uid=1_52 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:12567:17"
+  uid=1_53 StaticText ")
+    at JSXParserMixin.parseParenAndDistinguishExpression ("
+  uid=1_54 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:11747:28"
+  uid=1_55 StaticText ")
+    at JSXParserMixin.parseExprAtom ("
+  uid=1_56 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:11395:23"
+  uid=1_57 StaticText ")
+    at JSXParserMixin.parseExprAtom ("
+  uid=1_58 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:4793:20"
+  uid=1_59 StaticText ")
+    at JSXParserMixin.parseExprSubscripts ("
+  uid=1_60 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:11145:23"
+  uid=1_61 StaticText ")
+    at JSXParserMixin.parseUpdate ("
+  uid=1_62 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:11130:21"
+  uid=1_63 StaticText ")
+    at JSXParserMixin.parseMaybeUnary ("
+  uid=1_64 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:11110:23"
+  uid=1_65 StaticText ")
+    at JSXParserMixin.parseMaybeUnaryOrPrivate ("
+  uid=1_66 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:10963:61"
+  uid=1_67 StaticText ")
+    at JSXParserMixin.parseExprOps ("
+  uid=1_68 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:10968:23"
+  uid=1_69 StaticText ")
+    at JSXParserMixin.parseMaybeConditional ("
+  uid=1_70 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:10945:23"
+  uid=1_71 StaticText ")
+    at JSXParserMixin.parseMaybeAssign ("
+  uid=1_72 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:10895:21"
+  uid=1_73 StaticText ")
+    at JSXParserMixin.parseExpressionBase ("
+  uid=1_74 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:10848:23"
+  uid=1_75 StaticText ")
+    at "
+  uid=1_76 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:10844:39"
+  uid=1_77 StaticText "
+    at JSXParserMixin.allowInAnd ("
+  uid=1_78 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:12495:16"
+  uid=1_79 StaticText ")
+    at JSXParserMixin.parseExpression ("
+  uid=1_80 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:10844:17"
+  uid=1_81 StaticText ")
+    at JSXParserMixin.parseReturnStatement ("
+  uid=1_82 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:13218:28"
+  uid=1_83 StaticText ")
+    at JSXParserMixin.parseStatementContent ("
+  uid=1_84 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:12874:21"
+  uid=1_85 StaticText ")
+    at JSXParserMixin.parseStatementLike ("
+  uid=1_86 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:12843:17"
+  uid=1_87 StaticText ")
+    at JSXParserMixin.parseStatementListItem ("
+  uid=1_88 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:12823:17"
+  uid=1_89 StaticText ")
+    at JSXParserMixin.parseBlockOrModuleBlockBody ("
+  uid=1_90 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:13392:61"
+  uid=1_91 StaticText ")
+    at JSXParserMixin.parseBlockBody ("
+  uid=1_92 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:13385:10"
+  uid=1_93 StaticText ")
+    at JSXParserMixin.parseBlock ("
+  uid=1_94 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:13373:10"
+  uid=1_95 StaticText ")
+    at JSXParserMixin.parseFunctionBody ("
+  uid=1_96 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:12174:24"
+  uid=1_97 StaticText ")
+    at JSXParserMixin.parseFunctionBodyAndFinish ("
+  uid=1_98 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:12160:10"
+  uid=1_99 StaticText ")
+    at "
+  uid=1_100 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:13521:12"
+  uid=1_101 StaticText "
+    at JSXParserMixin.withSmartMixTopicForbiddingContext ("
+  uid=1_102 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:12477:14"
+  uid=1_103 StaticText ")
+    at JSXParserMixin.parseFunction ("
+  uid=1_104 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:13520:10"
+  uid=1_105 StaticText ")
+    at JSXParserMixin.parseFunctionStatement ("
+  uid=1_106 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:13201:17"
+  uid=1_107 StaticText ")
+    at JSXParserMixin.parseStatementContent ("
+  uid=1_108 StaticText "D:\vscode\SubtitleLingo\node_modules\@babel\parser\lib\index.js:12867:21"
+  uid=1_109 StaticText ")"
+  uid=1_110 StaticText "Click outside, press "
+  uid=1_111 StaticText "Esc"
+  uid=1_112 StaticText " key, or fix the code to dismiss."
+  uid=1_113 LineBreak "
+"
+  uid=1_114 StaticText "You can also disable this overlay by setting "
+  uid=1_115 StaticText "server.hmr.overlay"
+  uid=1_116 StaticText " to "
+  uid=1_117 StaticText "false"
+  uid=1_118 StaticText " in "
+  uid=1_119 StaticText "vite.config.js"
+  uid=1_120 StaticText "."

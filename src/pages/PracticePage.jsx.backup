@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { exerciseDB, movieDB } from '../config/turso';
 
-// 備用練習題資料（當資料庫沒有資料時使用）
-const fallbackQuestions = [
+// 假的練習題資料
+const fakeQuestions = [
   {
     id: 1,
     question: "I'm going to make him an offer he can't _____.",
@@ -38,67 +37,13 @@ function PracticePage() {
   const [score, setScore] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [quizCompleted, setQuizCompleted] = useState(false);
-  const [questions, setQuestions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [movie, setMovie] = useState(null);
 
-  // 載入練習題資料
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // 同時載入影片資訊和練習題
-        const [movieResult, exerciseResult] = await Promise.all([
-          movieDB.getByImdbId(movieId),
-          exerciseDB.getByMovieId(movieId)
-        ]);
-
-        // 處理影片資訊
-        if (movieResult.data && movieResult.data.length > 0) {
-          setMovie(movieResult.data[0]);
-        }
-
-        // 處理練習題
-        if (exerciseResult.data && exerciseResult.data.length > 0) {
-          // 解析 JSON 格式的選項
-          const formattedQuestions = exerciseResult.data.map(exercise => ({
-            id: exercise.id,
-            question: exercise.question_text,
-            correctAnswer: exercise.correct_answer,
-            options: typeof exercise.options === 'string'
-              ? JSON.parse(exercise.options)
-              : exercise.options,
-            explanation: exercise.explanation,
-            level: exercise.difficulty_level
-          }));
-          setQuestions(formattedQuestions);
-        } else {
-          // 如果沒有找到練習題，使用備用資料
-          console.log('⚠️ 找不到影片練習題，使用備用資料');
-          setQuestions(fallbackQuestions);
-        }
-      } catch (err) {
-        console.error('載入練習題失敗:', err);
-        setError('載入練習題失敗，顯示示範資料');
-        setQuestions(fallbackQuestions);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (movieId) {
-      loadData();
-    }
-  }, [movieId]);
-
-  const currentQuestion = questions[currentQuestionIndex];
-  const progress = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
+  const currentQuestion = fakeQuestions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / fakeQuestions.length) * 100;
 
   const handleAnswerSelect = (answer) => {
     if (showResult) return;
+
     setSelectedAnswer(answer);
   };
 
@@ -122,12 +67,10 @@ function PracticePage() {
     if (isCorrect) {
       setScore(score + 1);
     }
-
-    // TODO: 這裡可以記錄答案到資料庫
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
+    if (currentQuestionIndex < fakeQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer('');
       setShowResult(false);
@@ -144,73 +87,6 @@ function PracticePage() {
     setAnswers([]);
     setQuizCompleted(false);
   };
-
-  // 載入狀態
-  if (loading) {
-    return (
-      <div className="app-container">
-        <aside className="sidebar">
-          <div className="p-4">
-            <h1 className="text-2xl font-bold mb-6 text-center">
-              <span className="bg-gradient-to-r from-blue-400 to-amber-400 bg-clip-text text-transparent">
-                SubtitleLingo
-              </span>
-            </h1>
-          </div>
-        </aside>
-        <main className="main-content">
-          <div className="page-header">
-            <h1 className="page-title">載入中...</h1>
-            <p className="page-subtitle">正在準備練習題</p>
-          </div>
-          <div className="content-area flex items-center justify-center">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <p className="text-slate-400">正在載入練習題...</p>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  // 錯誤狀態
-  if (error && questions.length === 0) {
-    return (
-      <div className="app-container">
-        <aside className="sidebar">
-          <div className="p-4">
-            <h1 className="text-2xl font-bold mb-6 text-center">
-              <span className="bg-gradient-to-r from-blue-400 to-amber-400 bg-clip-text text-transparent">
-                SubtitleLingo
-              </span>
-            </h1>
-          </div>
-        </aside>
-        <main className="main-content">
-          <div className="page-header">
-            <h1 className="page-title">載入失敗</h1>
-            <p className="page-subtitle">無法載入練習題</p>
-          </div>
-          <div className="content-area">
-            <div className="max-w-2xl mx-auto">
-              <div className="card text-center">
-                <div className="text-6xl mb-6">😅</div>
-                <h2 className="text-2xl font-bold text-white mb-4">載入練習題時發生錯誤</h2>
-                <p className="text-slate-300 mb-6">{error}</p>
-                <Link
-                  to="/"
-                  className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
-                >
-                  🏠 回到首頁
-                </Link>
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
 
   if (quizCompleted) {
     return (
@@ -245,10 +121,10 @@ function PracticePage() {
                 </h2>
                 <div className="text-6xl font-bold mb-4">
                   <span className="text-amber-400">{score}</span>
-                  <span className="text-slate-400">/{questions.length}</span>
+                  <span className="text-slate-400">/{fakeQuestions.length}</span>
                 </div>
                 <p className="text-xl text-slate-300 mb-8">
-                  正確率：{Math.round((score / questions.length) * 100)}%
+                  正確率：{Math.round((score / fakeQuestions.length) * 100)}%
                 </p>
 
                 <div className="space-y-4 mb-8">
@@ -312,7 +188,7 @@ function PracticePage() {
             <div className="bg-slate-800/50 rounded-lg p-4">
               <h3 className="text-white font-semibold mb-2">練習進度</h3>
               <div className="text-2xl font-bold text-amber-400 mb-2">
-                {currentQuestionIndex + 1} / {questions.length}
+                {currentQuestionIndex + 1} / {fakeQuestions.length}
               </div>
               <div className="w-full bg-slate-700 rounded-full h-2 mb-2">
                 <div
@@ -323,11 +199,6 @@ function PracticePage() {
               <div className="text-sm text-slate-400">
                 目前得分：{score} 分
               </div>
-              {movie && (
-                <div className="text-sm text-slate-400 mt-2">
-                  🎬 {movie.title}
-                </div>
-              )}
             </div>
           </div>
 
@@ -346,7 +217,7 @@ function PracticePage() {
         <div className="page-header">
           <h1 className="page-title">填空練習</h1>
           <p className="page-subtitle">
-            {movie ? movie.title : `影片 ID: ${movieId}`} • 測試您對重要對話的理解
+            影片 ID: {movieId} • 測試您對重要對話的理解
           </p>
         </div>
 
@@ -372,17 +243,17 @@ function PracticePage() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-white">填空題</h2>
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    currentQuestion?.level === 'beginner' ? 'bg-green-600 text-white' :
-                    currentQuestion?.level === 'intermediate' ? 'bg-blue-600 text-white' :
+                    currentQuestion.level === 'beginner' ? 'bg-green-600 text-white' :
+                    currentQuestion.level === 'intermediate' ? 'bg-blue-600 text-white' :
                     'bg-red-600 text-white'
                   }`}>
-                    {currentQuestion?.level === 'beginner' ? '初級' :
-                     currentQuestion?.level === 'intermediate' ? '中級' : '高級'}
+                    {currentQuestion.level === 'beginner' ? '初級' :
+                     currentQuestion.level === 'intermediate' ? '中級' : '高級'}
                   </span>
                 </div>
 
                 <div className="text-2xl text-white leading-relaxed mb-6">
-                  {currentQuestion?.question.split('_____').map((part, index, array) => (
+                  {currentQuestion.question.split('_____').map((part, index, array) => (
                     <span key={index}>
                       {part}
                       {index < array.length - 1 && (
@@ -406,7 +277,7 @@ function PracticePage() {
               </div>
 
               {/* 選項 */}
-              {!showResult && currentQuestion?.options && (
+              {!showResult && (
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   {currentQuestion.options.map((option) => (
                     <button
@@ -450,7 +321,7 @@ function PracticePage() {
 
                   <div className="mt-3 pt-3 border-t border-slate-600">
                     <p className="text-slate-300">
-                      💡 {currentQuestion?.explanation}
+                      💡 {currentQuestion.explanation}
                     </p>
                   </div>
                 </div>
@@ -476,7 +347,7 @@ function PracticePage() {
                     onClick={handleNextQuestion}
                     className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
                   >
-                    {currentQuestionIndex < questions.length - 1 ? '下一題' : '查看結果'}
+                    {currentQuestionIndex < fakeQuestions.length - 1 ? '下一題' : '查看結果'}
                   </button>
                 )}
               </div>
