@@ -7,7 +7,7 @@ import StatsPage from './pages/StatsPage';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/subtitlelingo">
       <div className="App">
         <Routes>
           <Route path="/" element={<HomePage />} />
