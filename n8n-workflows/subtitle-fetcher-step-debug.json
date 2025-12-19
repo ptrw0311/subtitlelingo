@@ -1,0 +1,148 @@
+{
+  "name": "Subtitle Fetcher Step Debug",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "subtitle-fetcher-step",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-step",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "subtitle-fetcher-step"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 檢查接收到的數據\nconst items = $input.all();\nconst firstItem = items[0];\nconst jsonData = firstItem.json;\n\n// 獲取 body\nlet body = jsonData.body || jsonData || {};\n\nconsole.log('=== REQUEST DEBUG ===');\nconsole.log('Full JSON:', JSON.stringify(jsonData, null, 2));\nconsole.log('Body:', JSON.stringify(body, null, 2));\n\n// 標準化輸出格式\nreturn {\n  json: {\n    ...jsonData,\n    parsedBody: body,\n    endpoint: body.endpoint || '',\n    query: body.query,\n    page: body.page,\n    imdb_id: body.imdb_id,\n    language: body.language\n  }\n};"
+      },
+      "id": "parse-request",
+      "name": "Parse Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.parsedBody.endpoint }}",
+              "rightValue": "/movies/popular",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-popular",
+      "name": "Is Popular Movies?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 測試 OpenSubtitles API\nconst item = $input.first();\nconst endpoint = item.json.parsedBody.endpoint;\nconst page = item.json.parsedBody.page || 1;\n\nif (endpoint === '/movies/popular') {\n  // 返回測試數據，而不是真實調用\n  return {\n    json: {\n      data: [\n        { id: 1, title: 'Inception', year: 2010, imdb_id: 'tt1375666' },\n        { id: 2, title: 'The Matrix', year: 1999, imdb_id: 'tt0133093' },\n        { id: 3, title: 'Interstellar', year: 2014, imdb_id: 'tt0816692' }\n      ],\n      page: page,\n      total_results: 3,\n      message: 'API 調用成功（測試數據）'\n    }\n  };\n}\n\nreturn { json: { error: 'Unknown endpoint' } };"
+      },
+      "id": "test-api",
+      "name": "Test API Call",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"data\": {\n    \"endpoint\": $json.parsedBody.endpoint,\n    \"api_results\": $json,\n    \"debug_info\": {\n      \"condition_matched\": true,\n      \"node_executed\": \"Test API Call\"\n    }\n  },\n  \"message\": \"成功處理請求\"\n}",
+        "options": {}
+      },
+      "id": "response-success",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"error\": \"條件不符合\",\n  \"data\": {\n    \"endpoint\": $json.parsedBody.endpoint || 'empty',\n    \"expected\": \"/movies/popular\",\n    \"debug_info\": {\n      \"condition_matched\": false,\n      \"node_executed\": \"Error Response\"\n    }\n  },\n  \"message\": \"請檢查 endpoint 參數\"\n}",
+        "options": {}
+      },
+      "id": "response-fail",
+      "name": "Fail Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 400]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Request": {
+      "main": [
+        [
+          {
+            "node": "Is Popular Movies?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Popular Movies?": {
+      "main": [
+        [
+          {
+            "node": "Test API Call",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test API Call": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

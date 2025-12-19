@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "n8n-mcp": {
+      "command": "node",
+      "args": ["D:\\vscode\\SubtitleLingo\\n8n-mcp-server.js"],
+      "env": {
+        "N8N_URL": "https://ptrw0311-n8n-free.hf.space"
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"],
+      "env": {}
+    }
+  }
+}

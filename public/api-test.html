@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubtitleLingo API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        h2 {
+            color: #666;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        input[type="text"], input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+            margin: 5px;
+        }
+        label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎬 SubtitleLingo API 測試</h1>
+
+    <div class="container">
+        <h2>健康檢查</h2>
+        <button class="button" onclick="testHealth()">測試健康狀態</button>
+        <div id="health-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>熱門影片</h2>
+        <label>頁數:</label>
+        <input type="number" id="popular-page" value="1" min="1" max="10">
+        <button class="button" onclick="testPopularMovies()">取得熱門影片</button>
+        <div id="popular-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>搜尋影片</h2>
+        <label>關鍵字:</label>
+        <input type="text" id="search-query" value="Inception" placeholder="輸入影片名稱">
+        <label>頁數:</label>
+        <input type="number" id="search-page" value="1" min="1" max="10">
+        <button class="button" onclick="testSearchMovies()">搜尋影片</button>
+        <div id="search-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>抓取字幕</h2>
+        <label>IMDb ID:</label>
+        <input type="text" id="subtitle-imdb" value="tt1375666" placeholder="例如: tt1375666">
+        <label>語言:</label>
+        <input type="text" id="subtitle-lang" value="en" placeholder="en, zh, etc.">
+        <button class="button" onclick="testFetchSubtitles()">抓取字幕</button>
+        <div id="subtitle-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>影片分析</h2>
+        <label>IMDb ID:</label>
+        <input type="text" id="analyze-imdb" value="tt1375666" placeholder="例如: tt1375666">
+        <button class="button" onclick="testAnalyzeMovie()">分析影片</button>
+        <div id="analyze-result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://ptrw0311-n8n-free.hf.space/webhook';
+
+        async function makeRequest(endpoint, data = {}) {
+            try {
+                // 將請求轉發到 n8n webhook
+                const webhookData = {
+                    endpoint: endpoint,
+                    ...data
+                };
+
+                const response = await fetch(`${API_BASE_URL}/subtitle-fetcher-complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(webhookData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP 錯誤: ${response.status} ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        function showResult(elementId, result, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${isError ? 'error' : 'success'}`;
+            element.textContent = JSON.stringify(result, null, 2);
+        }
+
+        function showInfo(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = 'result info';
+            element.textContent = message;
+        }
+
+        async function testHealth() {
+            try {
+                showInfo('health-result', '正在檢查健康狀態...');
+
+                const response = await fetch(`${API_BASE_URL.replace('/webhook', '')}/health`);
+                const result = await response.json();
+
+                if (response.ok) {
+                    showResult('health-result', result);
+                } else {
+                    showResult('health-result', { error: result.message || '健康檢查失敗' }, true);
+                }
+            } catch (error) {
+                showResult('health-result', { error: error.message }, true);
+            }
+        }
+
+        async function testPopularMovies() {
+            try {
+                const page = document.getElementById('popular-page').value;
+                showInfo('popular-result', `正在取得第 ${page} 頁熱門影片...`);
+
+                const result = await makeRequest('/movies/popular', { page: parseInt(page) });
+                showResult('popular-result', result);
+            } catch (error) {
+                showResult('popular-result', { error: error.message }, true);
+            }
+        }
+
+        async function testSearchMovies() {
+            try {
+                const query = document.getElementById('search-query').value;
+                const page = document.getElementById('search-page').value;
+                showInfo('search-result', `正在搜尋 "${query}" 第 ${page} 頁...`);
+
+                const result = await makeRequest('/movies/search', { query, page: parseInt(page) });
+                showResult('search-result', result);
+            } catch (error) {
+                showResult('search-result', { error: error.message }, true);
+            }
+        }
+
+        async function testFetchSubtitles() {
+            try {
+                const imdbId = document.getElementById('subtitle-imdb').value;
+                const language = document.getElementById('subtitle-lang').value;
+                showInfo('subtitle-result', `正在抓取字幕 ${imdbId} (${language})...`);
+
+                const result = await makeRequest('/subtitles/fetch', {
+                    imdb_id: imdbId,
+                    language,
+                    force_refresh: false
+                });
+                showResult('subtitle-result', result);
+            } catch (error) {
+                showResult('subtitle-result', { error: error.message }, true);
+            }
+        }
+
+        async function testAnalyzeMovie() {
+            try {
+                const imdbId = document.getElementById('analyze-imdb').value;
+                showInfo('analyze-result', `正在分析影片 ${imdbId}...`);
+
+                const result = await makeRequest(`/movies/${imdbId}/analyze`, {});
+                showResult('analyze-result', result);
+            } catch (error) {
+                showResult('analyze-result', { error: error.message }, true);
+            }
+        }
+
+        // 頁面載入時自動測試健康狀態
+        window.onload = function() {
+            console.log('SubtitleLingo API 測試頁面已載入');
+            console.log(`API 基礎 URL: ${API_BASE_URL}`);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{
+  "name": "Subtitle Fetcher Debug",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "subtitle-fetcher-debug",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-debug",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "subtitle-fetcher-debug"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 簡單調試版本\nconst items = $input.all();\nconst firstItem = items[0];\nconst jsonData = firstItem.json;\n\n// 獲取 body\nconst body = jsonData.body || jsonData || {};\n\nconsole.log('=== DEBUG INFO ===');\nconsole.log('Full JSON:', JSON.stringify(jsonData, null, 2));\nconsole.log('Body:', JSON.stringify(body, null, 2));\n\n// 創建回應\nconst response = {\n  success: true,\n  debug: {\n    received_body: body,\n    endpoint: body.endpoint,\n    has_body: !!jsonData.body\n  },\n  message: 'Debug mode - 檢查請求內容'\n};\n\n// 測試 OpenSubtitles API\nif (body.endpoint === '/movies/popular') {\n  // 直接返回測試數據\n  response.data = [\n    { id: 1, title: 'Inception', year: 2010, imdb_id: 'tt1375666' },\n    { id: 2, title: 'The Matrix', year: 1999, imdb_id: 'tt0133093' }\n  ];\n  response.message = '熱門影片（測試數據）';\n}\n\nreturn { json: response };"
+      },
+      "id": "code-debug",
+      "name": "Debug Process",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "response-debug",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Debug Process",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Debug Process": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

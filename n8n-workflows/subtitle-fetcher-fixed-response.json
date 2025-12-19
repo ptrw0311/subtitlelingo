@@ -1,0 +1,71 @@
+{
+  "name": "Subtitle Fetcher Fixed Response",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "subtitle-fetcher-fixed",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-fixed",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "subtitle-fetcher-fixed"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// 獲取請求數據\nconst items = $input.all();\nconst firstItem = items[0];\nconst jsonData = firstItem.json;\n\n// 獲取 body\nlet body = jsonData.body || jsonData || {};\n\nconsole.log('=== DEBUG ===');\nconsole.log('Body:', JSON.stringify(body, null, 2));\n\n// 根據 endpoint 處理\nconst endpoint = body.endpoint || '';\nlet result;\n\nif (endpoint === '/movies/popular') {\n  result = {\n    success: true,\n    endpoint: endpoint,\n    data: [\n      { id: 1, title: 'Inception', year: 2010, imdb_id: 'tt1375666' },\n      { id: 2, title: 'The Matrix', year: 1999, imdb_id: 'tt0133093' },\n      { id: 3, title: 'Interstellar', year: 2014, imdb_id: 'tt0816692' }\n    ],\n    page: body.page || 1,\n    message: '熱門影片抓取成功'\n  };\n} else if (endpoint === '/movies/search') {\n  result = {\n    success: true,\n    endpoint: endpoint,\n    query: body.query || '',\n    data: [\n      { id: 4, title: `搜尋結果: ${body.query}`, year: 2021, imdb_id: 'tt9999999' }\n    ],\n    message: '影片搜尋成功'\n  };\n} else if (endpoint === '/subtitles/fetch') {\n  result = {\n    success: true,\n    endpoint: endpoint,\n    imdb_id: body.imdb_id || '',\n    language: body.language || 'en',\n    entries_count: 100,\n    message: '字幕抓取成功（模擬）'\n  };\n} else {\n  result = {\n    success: false,\n    error: 'Unknown endpoint',\n    received_endpoint: endpoint,\n    message: '請檢查 endpoint 參數'\n  };\n}\n\n// 直接返回結果對象，不要包裝在 json 中\nreturn result;"
+      },
+      "id": "code-fixed",
+      "name": "Process and Return",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "response-fixed",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Process and Return",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process and Return": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
