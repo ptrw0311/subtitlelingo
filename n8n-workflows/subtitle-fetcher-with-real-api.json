@@ -1,0 +1,117 @@
+{
+  "name": "Subtitle Fetcher with Real API",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "subtitle-fetcher-real-api",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger-001",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "subtitle-fetcher-real-api"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all();\nconst firstItem = items[0];\nconst jsonData = firstItem.json;\nlet body = jsonData.body || jsonData || {};\nconst endpoint = body.endpoint || '';\nif (endpoint !== '/subtitles/fetch') {\n  return {\n    skip_http: true,\n    endpoint: endpoint,\n    body: body\n  };\n}\nconst imdbId = body.imdb_id || '';\nconst language = body.language || 'en';\nif (!imdbId) {\n  return {\n    error: 'IMDb ID is required'\n  };\n}\nconst cleanImdbId = imdbId.replace(/^tt/, '');\nreturn {\n  clean_imdb_id: cleanImdbId,\n  original_imdb_id: imdbId,\n  language: language,\n  endpoint: endpoint,\n  force_refresh: body.force_refresh || false\n};"
+      },
+      "id": "prepare-api-001",
+      "name": "Prepare API Call",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.opensubtitles.com/api/v1/subtitles?imdb_id={{ $json.clean_imdb_id }}&languages={{ $json.language }}",
+        "authentication": "none",
+        "options": {}
+      },
+      "id": "http-request-001",
+      "name": "HTTP Request Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all();\nconst firstItem = items[0];\nconst apiResponse = firstItem.json;\nif (!apiResponse || !apiResponse.data || apiResponse.data.length === 0) {\n  return {\n    success: false,\n    error: 'No subtitles found',\n    message: 'Check IMDb ID or try another language'\n  };\n}\nconst bestSubtitle = apiResponse.data.reduce((best, current) => {\n  const currentDownloads = (current.attributes.download_count || 0) + (current.attributes.new_download_count || 0);\n  const bestDownloads = best ? (best.attributes.download_count || 0) + (best.attributes.new_download_count || 0) : 0;\n  return currentDownloads > bestDownloads ? current : best;\n}, null);\nif (!bestSubtitle) {\n  return {\n    success: false,\n    error: 'Cannot select subtitle'\n  };\n}\nconst fileId = bestSubtitle.attributes.files?.[0]?.file_id;\nif (!fileId) {\n  return {\n    success: false,\n    error: 'File ID missing'\n  };\n}\nreturn {\n  success: true,\n  endpoint: '/subtitles/fetch',\n  subtitle_found: true,\n  subtitle_info: {\n    id: bestSubtitle.id,\n    file_id: fileId,\n    language: bestSubtitle.attributes.language,\n    total_downloads: (bestSubtitle.attributes.download_count || 0) + (bestSubtitle.attributes.new_download_count || 0),\n    release: bestSubtitle.attributes.release,\n    file_name: bestSubtitle.attributes.files[0].file_name,\n    movie_title: bestSubtitle.attributes.feature_details?.title,\n    movie_year: bestSubtitle.attributes.feature_details?.year\n  },\n  available_count: apiResponse.total_count,\n  message: `Found ${apiResponse.total_count} subtitles, selected best match`\n};"
+      },
+      "id": "process-response-001",
+      "name": "Process Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "response-001",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare API Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare API Call": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request Search": {
+      "main": [
+        [
+          {
+            "node": "Process Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": ["real-api", "opensubtitles"]
+}

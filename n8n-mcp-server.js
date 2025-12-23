@@ -8,6 +8,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 const N8N_URL = process.env.N8N_URL || 'https://ptrw0311-n8n-free.hf.space';
+const N8N_API_KEY = process.env.N8N_API_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhMDgxZTM5My1lYzJjLTRlOTUtODU1NS0yOGQ4Y2VjNThhOWEiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzY2MTIzMjY2fQ.KWe_vyYS3oN9GGOWmhwv9kgmyNqh7rXADNdH8xZf86U';
 
 class N8NServer {
   constructor() {
@@ -156,11 +157,18 @@ class N8NServer {
       const workflow = JSON.parse(workflowJson);
       const url = `${N8N_URL}/rest/workflows`;
 
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      // 添加 API Key 認證
+      if (N8N_API_KEY) {
+        headers['Authorization'] = `Bearer ${N8N_API_KEY}`;
+      }
+
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(workflow),
       });
 
@@ -194,7 +202,14 @@ class N8NServer {
     try {
       const url = `${N8N_URL}/rest/executions/${executionId}`;
 
-      const response = await fetch(url);
+      const headers = {};
+
+      // 添加 API Key 認證
+      if (N8N_API_KEY) {
+        headers['Authorization'] = `Bearer ${N8N_API_KEY}`;
+      }
+
+      const response = await fetch(url, { headers });
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
