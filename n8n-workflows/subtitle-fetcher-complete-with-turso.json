@@ -1,5 +1,5 @@
 {
-  "name": "Subtitle Fetcher Complete with Turso",
+  "name": "Subtitle Fetcher Complete with Download and Turso",
   "nodes": [
     {
       "parameters": {
@@ -8,7 +8,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "webhook-main",
+      "id": "webhook-trigger",
       "name": "Webhook Trigger",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
@@ -17,174 +17,89 @@
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict"
-          },
-          "conditions": [
-            {
-              "leftValue": "={{ $json.body.endpoint }}",
-              "rightValue": "/movies/popular",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        }
+        "mode": "runOnceForAllItems",
+        "jsCode": "const body = $input.first().json.body || {};\nconst endpoint = body.endpoint || '';\n\nif (endpoint !== '/subtitles/fetch') {\n  return {\n    skip_http: true,\n    endpoint: endpoint,\n    body: body\n  };\n}\n\nconst imdbId = body.imdb_id || '';\nconst language = body.language || 'en';\n\nif (!imdbId) {\n  return {\n    error: 'IMDb ID is required'\n  };\n}\n\nconst cleanImdbId = imdbId.replace(/^tt/, '');\n\nreturn {\n  clean_imdb_id: cleanImdbId,\n  original_imdb_id: imdbId,\n  language: language,\n  endpoint: endpoint,\n  force_refresh: body.force_refresh || false\n};"
       },
-      "id": "if-popular",
-      "name": "Is Popular Movies?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [460, 200]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict"
-          },
-          "conditions": [
-            {
-              "leftValue": "={{ $json.body.endpoint }}",
-              "rightValue": "/movies/search",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        }
-      },
-      "id": "if-search",
-      "name": "Is Search Movies?",
-      "type": "n8n-nodes-base.if",
+      "id": "prepare-api",
+      "name": "Prepare API Call",
+      "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [460, 300]
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict"
-          },
-          "conditions": [
-            {
-              "leftValue": "={{ $json.body.endpoint }}",
-              "rightValue": "/subtitles/fetch",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        }
+        "method": "GET",
+        "url": "=https://api.opensubtitles.com/api/v1/subtitles?imdb_id={{ $json.clean_imdb_id }}&languages={{ $json.language }}",
+        "authentication": "none",
+        "options": {}
       },
-      "id": "if-subtitles",
-      "name": "Is Fetch Subtitles?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [460, 400]
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForAllItems",
-        "jsCode": "// 處理熱門影片請求\nconst body = $input.first().json.body || {};\nconst page = body.page || 1;\n\n// 模擬熱門影片數據\nconst popularMovies = [\n  { id: 1, title: 'Inception', year: 2010, imdb_id: 'tt1375666' },\n  { id: 2, title: 'The Matrix', year: 1999, imdb_id: 'tt0133093' },\n  { id: 3, title: 'Interstellar', year: 2014, imdb_id: 'tt0816692' },\n  { id: 4, title: 'The Dark Knight', year: 2008, imdb_id: 'tt0468569' },\n  { id: 5, title: 'Pulp Fiction', year: 1994, imdb_id: 'tt0110912' }\n];\n\nreturn {\n  success: true,\n  endpoint: '/movies/popular',\n  data: popularMovies,\n  page: page,\n  total_pages: 10,\n  message: '熱門影片抓取成功'\n};"
-      },
-      "id": "process-popular",
-      "name": "Process Popular Movies",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [680, 200]
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForAllItems",
-        "jsCode": "// 處理影片搜尋請求\nconst body = $input.first().json.body || {};\nconst query = body.query || '';\nconst page = body.page || 1;\n\n// 模擬搜尋結果\nconst searchResults = [\n  { id: 101, title: `${query} - Movie 1`, year: 2021, imdb_id: 'tt1234567' },\n  { id: 102, title: `${query} - Movie 2`, year: 2020, imdb_id: 'tt2345678' },\n  { id: 103, title: `${query} - Movie 3`, year: 2019, imdb_id: 'tt3456789' }\n];\n\nreturn {\n  success: true,\n  endpoint: '/movies/search',\n  query: query,\n  data: searchResults,\n  page: page,\n  total_pages: 5,\n  message: '影片搜尋成功'\n};"
-      },
-      "id": "process-search",
-      "name": "Process Search Movies",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "id": "http-search",
+      "name": "HTTP Request - Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [680, 300]
     },
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// 處理字幕抓取請求\nconst body = $input.first().json.body || {};\nconst imdbId = body.imdb_id || '';\nconst language = body.language || 'en';\nconst forceRefresh = body.force_refresh || false;\n\nif (!imdbId) {\n  return {\n    success: false,\n    error: 'IMDb ID 是必填的',\n    message: '請提供有效的 IMDb ID'\n  };\n}\n\n// 生成模擬字幕數據\nconst subtitles = [];\nconst startTime = Date.now();\n\n// 生成 100 條字幕條目\nfor (let i = 0; i < 100; i++) {\n  const startTimeMs = i * 2000; // 每 2 秒一條字幕\n  const endTimeMs = (i + 1) * 2000;\n  \n  subtitles.push({\n    id: i + 1,\n    start_time: formatTime(startTimeMs),\n    end_time: formatTime(endTimeMs),\n    text: `這是第 ${i + 1} 條字幕文本 (${language.toUpperCase()})`,\n    language: language,\n    imdb_id: imdbId\n  });\n}\n\n// 時間格式化函數\nfunction formatTime(ms) {\n  const seconds = Math.floor(ms / 1000);\n  const hours = Math.floor(seconds / 3600);\n  const minutes = Math.floor((seconds % 3600) / 60);\n  const secs = seconds % 60;\n  \n  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')},000`;\n}\n\nconst processingTime = Date.now() - startTime;\n\n// 返回結果，包含字幕數據準備插入資料庫\nreturn {\n  success: true,\n  endpoint: '/subtitles/fetch',\n  imdb_id: imdbId,\n  language: language,\n  force_refresh: forceRefresh,\n  entries_count: subtitles.length,\n  processing_time_ms: processingTime,\n  subtitles: subtitles,\n  message: '字幕抓取成功，準備匯入資料庫',\n  db_insert_ready: true\n};"
+        "jsCode": "const apiResponse = $input.first().json;\nconst prepareData = $input.first().json.previousData || {};\n\nif (!apiResponse || !apiResponse.data || apiResponse.data.length === 0) {\n  return {\n    success: false,\n    error: 'No subtitles found',\n    message: 'Check IMDb ID or try another language'\n  };\n}\n\nconst bestSubtitle = apiResponse.data.reduce((best, current) => {\n  const currentDownloads = (current.attributes.download_count || 0) + (current.attributes.new_download_count || 0);\n  const bestDownloads = best ? (best.attributes.download_count || 0) + (best.attributes.new_download_count || 0) : 0;\n  return currentDownloads > bestDownloads ? current : best;\n}, null);\n\nif (!bestSubtitle) {\n  return {\n    success: false,\n    error: 'Cannot select subtitle'\n  };\n}\n\nconst fileId = bestSubtitle.attributes.files?.[0]?.file_id;\nif (!fileId) {\n  return {\n    success: false,\n    error: 'File ID missing'\n  };\n}\n\nreturn {\n  success: true,\n  file_id: fileId,\n  subtitle_info: {\n    id: bestSubtitle.id,\n    file_id: fileId,\n    language: bestSubtitle.attributes.language,\n    total_downloads: (bestSubtitle.attributes.download_count || 0) + (bestSubtitle.attributes.new_download_count || 0),\n    release: bestSubtitle.attributes.release,\n    file_name: bestSubtitle.attributes.files[0].file_name,\n    movie_title: bestSubtitle.attributes.feature_details?.title,\n    movie_year: bestSubtitle.attributes.feature_details?.year,\n    imdb_id: prepareData.original_imdb_id || bestSubtitle.attributes.feature_details?.imdb_id\n  }\n};"
       },
-      "id": "fetch-subtitles",
-      "name": "Fetch Subtitles",
+      "id": "select-best",
+      "name": "Select Best Subtitle",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [680, 400]
+      "position": [900, 300]
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict"
-          },
-          "conditions": [
-            {
-              "leftValue": "={{ $json.success }}",
-              "rightValue": true,
-              "operator": {
-                "type": "boolean",
-                "operation": "equal"
-              }
-            },
-            {
-              "leftValue": "={{ $json.db_insert_ready }}",
-              "rightValue": true,
-              "operator": {
-                "type": "boolean",
-                "operation": "equal"
-              }
-            }
-          ],
-          "combinator": "and"
-        }
+        "method": "POST",
+        "url": "https://api.opensubtitles.com/api/v1/download",
+        "authentication": "none",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { file_id: $json.file_id } }}",
+        "options": {}
       },
-      "id": "if-insert-db",
-      "name": "Need DB Insert?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [900, 400]
+      "id": "http-download",
+      "name": "HTTP Request - Download",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 300]
     },
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// 將字幕數據轉換為資料庫插入格式\nconst data = $input.first().json;\nconst subtitles = data.subtitles || [];\n\n// 準備資料庫插入的數據\nconst dbRecords = subtitles.map((subtitle, index) => ({\n  operation: 'insert',\n  table: 'subtitles',\n  data: {\n    imdb_id: subtitle.imdb_id,\n    language: subtitle.language,\n    start_time: subtitle.start_time,\n    end_time: subtitle.end_time,\n    text: subtitle.text,\n    sequence_number: subtitle.id,\n    created_at: new Date().toISOString(),\n    updated_at: new Date().toISOString()\n  }\n}));\n\n// 添加影片信息記錄\nconst movieInfo = {\n  operation: 'upsert',\n  table: 'movies',\n  data: {\n    imdb_id: data.imdb_id,\n    title: `電影 ${data.imdb_id}`,\n    year: 2023,\n    last_subtitle_fetch: new Date().toISOString(),\n    subtitle_languages: JSON.stringify([data.language]),\n    created_at: new Date().toISOString(),\n    updated_at: new Date().toISOString()\n  }\n};\n\nreturn {\n  success: true,\n  imdb_id: data.imdb_id,\n  language: data.language,\n  entries_count: data.entries_count,\n  db_records: [movieInfo, ...dbRecords],\n  message: '字幕數據準備完成，即將匯入 Turso 資料庫'\n};"
+        "jsCode": "const downloadResponse = $input.first().json;\nconst subtitleInfo = $input.first().json.subtitle_info || {};\n\nif (!downloadResponse || !downloadResponse.link) {\n  return {\n    success: false,\n    error: 'Download link not found',\n    message: 'Cannot get subtitle download link'\n  };\n}\n\nconst downloadLink = downloadResponse.link;\nconst fileName = downloadResponse.file_name || subtitleInfo.file_name || 'subtitle.srt';\n\nreturn {\n  success: true,\n  download_link: downloadLink,\n  file_name: fileName,\n  subtitle_info: subtitleInfo,\n  remaining_quota: downloadResponse.remaining,\n  message: 'Download link obtained successfully'\n};"
       },
-      "id": "prepare-db-data",
-      "name": "Prepare DB Data",
+      "id": "prepare-download",
+      "name": "Prepare Download",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1120, 400]
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.download_link }}",
+        "authentication": "none",
+        "options": {}
+      },
+      "id": "http-fetch-srt",
+      "name": "HTTP Request - Fetch SRT",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 300]
     },
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// 模擬 Turso 資料庫插入操作\nconst data = $input.first().json;\nconst dbRecords = data.db_records || [];\n\nconsole.log(`開始插入 ${dbRecords.length} 筆記錄到 Turso 資料庫...`);\n\n// 模擬資料庫插入結果\nconst insertResults = [];\nlet successCount = 0;\nlet errorCount = 0;\n\nfor (let i = 0; i < dbRecords.length; i++) {\n  const record = dbRecords[i];\n  \n  try {\n    // 模擬 SQL 插入\n    const sql = record.operation === 'insert' \n      ? `INSERT INTO ${record.table} (imdb_id, language, start_time, end_time, text, sequence_number, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`\n      : `INSERT OR REPLACE INTO ${record.table} (imdb_id, title, year, last_subtitle_fetch, subtitle_languages, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`;\n    \n    // 模擬執行成功\n    insertResults.push({\n      table: record.table,\n      operation: record.operation,\n      success: true,\n      record_id: i + 1,\n      sql: sql\n    });\n    \n    successCount++;\n  } catch (error) {\n    insertResults.push({\n      table: record.table,\n      operation: record.operation,\n      success: false,\n      error: error.message\n    });\n    errorCount++;\n  }\n}\n\nconsole.log(`資料庫插入完成: ${successCount} 成功, ${errorCount} 失敗`);\n\nreturn {\n  success: true,\n  imdb_id: data.imdb_id,\n  language: data.language,\n  db_operation: 'insert',\n  total_records: dbRecords.length,\n  success_count: successCount,\n  error_count: errorCount,\n  insert_results: insertResults,\n  processing_time: '< 1 second',\n  message: `字幕已成功匯入 Turso 資料庫 (${successCount}/${dbRecords.length} 記錄成功)`\n};"
+        "jsCode": "const srtContent = $input.first().json;\nconst subtitleInfo = $input.first().json.subtitle_info || {};\n\nif (!srtContent || typeof srtContent !== 'string') {\n  return {\n    success: false,\n    error: 'SRT content not found',\n    message: 'Cannot fetch subtitle file'\n  };\n}\n\nfunction parseSRT(srtContent) {\n  const lines = srtContent.split('\\n');\n  const subtitles = [];\n  let currentSubtitle = null;\n  let lineNumber = 0;\n  \n  while (lineNumber < lines.length) {\n    const line = lines[lineNumber].trim();\n    \n    if (line === '') {\n      if (currentSubtitle && currentSubtitle.text) {\n        subtitles.push({...currentSubtitle});\n      }\n      currentSubtitle = null;\n    } else if (/^\\d+$/.test(line)) {\n      currentSubtitle = {\n        sequence_number: parseInt(line),\n        start_time: '',\n        end_time: '',\n        text: ''\n      };\n    } else if (line.includes('-->')) {\n      if (currentSubtitle) {\n        const [start, end] = line.split('-->').map(t => t.trim());\n        currentSubtitle.start_time = start;\n        currentSubtitle.end_time = end;\n      }\n    } else if (currentSubtitle) {\n      if (currentSubtitle.text) {\n        currentSubtitle.text += ' ' + line;\n      } else {\n        currentSubtitle.text = line;\n      }\n    }\n    \n    lineNumber++;\n  }\n  \n  if (currentSubtitle && currentSubtitle.text) {\n    subtitles.push(currentSubtitle);\n  }\n  \n  return subtitles;\n}\n\nconst parsedSubtitles = parseSRT(srtContent);\n\nif (parsedSubtitles.length === 0) {\n  return {\n    success: false,\n    error: 'No subtitles parsed',\n    message: 'SRT parsing failed'\n  };\n}\n\nreturn {\n  success: true,\n  imdb_id: subtitleInfo.imdb_id || 'unknown',\n  language: subtitleInfo.language || 'en',\n  movie_title: subtitleInfo.movie_title || 'Unknown',\n  movie_year: subtitleInfo.movie_year,\n  total_entries: parsedSubtitles.length,\n  subtitles: parsedSubtitles.slice(0, 10),\n  sample_subtitles: parsedSubtitles.slice(0, 3),\n  subtitle_info: subtitleInfo,\n  message: `Successfully parsed ${parsedSubtitles.length} subtitle entries`\n};"
       },
-      "id": "insert-turso",
-      "name": "Insert to Turso DB",
+      "id": "parse-srt",
+      "name": "Parse SRT Content",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1340, 400]
+      "position": [1780, 300]
     },
     {
       "parameters": {
@@ -193,21 +108,10 @@
         "options": {}
       },
       "id": "response-final",
-      "name": "Final Response",
+      "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1560, 300]
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForAllItems",
-        "jsCode": "// 處理未知端點\nconst body = $input.first().json.body || {};\nconst endpoint = body.endpoint || '';\n\nreturn {\n  success: false,\n  error: 'Unknown endpoint',\n  received_endpoint: endpoint,\n  message: '請檢查 endpoint 參數',\n  available_endpoints: [\n    '/movies/popular',\n    '/movies/search', \n    '/subtitles/fetch'\n  ]\n};"
-      },
-      "id": "handle-unknown",
-      "name": "Handle Unknown Endpoint",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [680, 500]
+      "position": [2000, 300]
     }
   ],
   "connections": {
@@ -215,141 +119,84 @@
       "main": [
         [
           {
-            "node": "Is Popular Movies?",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Is Search Movies?",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Is Fetch Subtitles?",
+            "node": "Prepare API Call",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Is Popular Movies?": {
+    "Prepare API Call": {
       "main": [
         [
           {
-            "node": "Process Popular Movies",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        []
-      ]
-    },
-    "Process Popular Movies": {
-      "main": [
-        [
-          {
-            "node": "Final Response",
+            "node": "HTTP Request - Search",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Is Search Movies?": {
+    "HTTP Request - Search": {
       "main": [
         [
           {
-            "node": "Process Search Movies",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        []
-      ]
-    },
-    "Process Search Movies": {
-      "main": [
-        [
-          {
-            "node": "Final Response",
+            "node": "Select Best Subtitle",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Is Fetch Subtitles?": {
+    "Select Best Subtitle": {
       "main": [
         [
           {
-            "node": "Fetch Subtitles",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        []
-      ]
-    },
-    "Fetch Subtitles": {
-      "main": [
-        [
-          {
-            "node": "Need DB Insert?",
+            "node": "HTTP Request - Download",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Need DB Insert?": {
+    "HTTP Request - Download": {
       "main": [
         [
           {
-            "node": "Prepare DB Data",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Final Response",
+            "node": "Prepare Download",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Prepare DB Data": {
+    "Prepare Download": {
       "main": [
         [
           {
-            "node": "Insert to Turso DB",
+            "node": "HTTP Request - Fetch SRT",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Insert to Turso DB": {
+    "HTTP Request - Fetch SRT": {
       "main": [
         [
           {
-            "node": "Final Response",
+            "node": "Parse SRT Content",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Handle Unknown Endpoint": {
+    "Parse SRT Content": {
       "main": [
         [
           {
-            "node": "Final Response",
+            "node": "Respond to Webhook",
             "type": "main",
             "index": 0
           }
@@ -357,9 +204,9 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "tags": ["complete", "turso", "subtitles"]
+  "tags": ["complete", "download", "parse", "production"]
 }
