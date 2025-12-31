@@ -182,7 +182,12 @@ export const vocabularyDB = {
 
   // 新增生字筆記
   create: async (vocabData) => {
-    return await insert('vocabulary_notes', vocabData);
+    // 處理 JSON 欄位
+    const dataToInsert = { ...vocabData };
+    if (dataToInsert.example_sentences && Array.isArray(dataToInsert.example_sentences)) {
+      dataToInsert.example_sentences = JSON.stringify(dataToInsert.example_sentences);
+    }
+    return await insert('vocabulary_notes', dataToInsert);
   },
 
   // 根據等級取得生字統計
@@ -205,6 +210,55 @@ export const vocabularyDB = {
       return { data: formatQueryResult(result), error: null };
     } catch (error) {
       console.error('生字統計錯誤:', error);
+      return { data: null, error };
+    }
+  }
+};
+
+// 重要對話相關的資料庫操作
+export const importantDialoguesDB = {
+  // 根據字幕 ID 取得重要對話
+  getBySubtitleId: async (subtitleId) => {
+    return await select('important_dialogues', { subtitle_id: subtitleId });
+  },
+
+  // 根據影片 ID 取得重要對話（透過字幕）
+  getByMovieId: async (movieId) => {
+    const sql = `
+      SELECT id.*
+      FROM important_dialogues id
+      JOIN subtitles s ON id.subtitle_id = s.id
+      WHERE s.movie_id = ?
+      ORDER BY id.time_start ASC
+    `;
+    try {
+      const result = await db.execute(sql, [movieId]);
+      return { data: formatQueryResult(result), error: null };
+    } catch (error) {
+      console.error('取得重要對話錯誤:', error);
+      return { data: null, error };
+    }
+  },
+
+  // 新增重要對話
+  create: async (dialogueData) => {
+    return await insert('important_dialogues', dialogueData);
+  },
+
+  // 根據難度等級取得對話
+  getByDifficulty: async (movieId, difficultyLevel) => {
+    const sql = `
+      SELECT id.*
+      FROM important_dialogues id
+      JOIN subtitles s ON id.subtitle_id = s.id
+      WHERE s.movie_id = ? AND id.difficulty_level = ?
+      ORDER BY id.time_start ASC
+    `;
+    try {
+      const result = await db.execute(sql, [movieId, difficultyLevel]);
+      return { data: formatQueryResult(result), error: null };
+    } catch (error) {
+      console.error('取得難度對話錯誤:', error);
       return { data: null, error };
     }
   }

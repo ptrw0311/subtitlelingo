@@ -22,3 +22,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files (contains sensitive data)
+.env
+.env.local
+.env.*.local
+
+# Claude Code settings
+.claude/settings.local.json
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Temporary files
+nul
+response.txt
+
+# MCP related
+.playwright-mcp/

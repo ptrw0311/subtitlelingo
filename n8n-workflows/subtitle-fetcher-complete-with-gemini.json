@@ -1,0 +1,511 @@
+{
+  "name": "Subtitle Fetcher Complete with Gemini and Turso",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "subtitle-fetcher-complete",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "subtitle-fetcher-complete"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const body = $input.first().json.body || {};\nconst endpoint = body.endpoint || '';\n\nif (endpoint !== '/subtitles/fetch') {\n  return {\n    skip_http: true,\n    endpoint: endpoint,\n    body: body\n  };\n}\n\nconst imdbId = body.imdb_id || '';\nconst language = body.language || 'en';\n\nif (!imdbId) {\n  return {\n    error: 'IMDb ID is required'\n  };\n}\n\nconst cleanImdbId = imdbId.replace(/^tt/, '');\n\nreturn {\n  clean_imdb_id: cleanImdbId,\n  original_imdb_id: imdbId,\n  language: language,\n  endpoint: endpoint,\n  force_refresh: body.force_refresh || false\n};"
+      },
+      "id": "prepare-api",
+      "name": "Prepare API Call",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.opensubtitles.com/api/v1/subtitles?imdb_id={{ $json.clean_imdb_id }}&languages={{ $json.language }}",
+        "authentication": "none",
+        "options": {}
+      },
+      "id": "http-search",
+      "name": "HTTP Request - Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const apiResponse = $input.first().json;\nconst prepareData = $input.first().json.previousData || {};\n\nif (!apiResponse || !apiResponse.data || apiResponse.data.length === 0) {\n  return {\n    success: false,\n    error: 'No subtitles found',\n    message: 'Check IMDb ID or try another language'\n  };\n}\n\nconst bestSubtitle = apiResponse.data.reduce((best, current) => {\n  const currentDownloads = (current.attributes.download_count || 0) + (current.attributes.new_download_count || 0);\n  const bestDownloads = best ? (best.attributes.download_count || 0) + (best.attributes.new_download_count || 0) : 0;\n  return currentDownloads > bestDownloads ? current : best;\n}, null);\n\nif (!bestSubtitle) {\n  return {\n    success: false,\n    error: 'Cannot select subtitle'\n  };\n}\n\nconst fileId = bestSubtitle.attributes.files?.[0]?.file_id;\nif (!fileId) {\n  return {\n    success: false,\n    error: 'File ID missing'\n  };\n}\n\nreturn {\n  success: true,\n  file_id: fileId,\n  subtitle_info: {\n    id: bestSubtitle.id,\n    file_id: fileId,\n    language: bestSubtitle.attributes.language,\n    total_downloads: (bestSubtitle.attributes.download_count || 0) + (bestSubtitle.attributes.new_download_count || 0),\n    release: bestSubtitle.attributes.release,\n    file_name: bestSubtitle.attributes.files[0].file_name,\n    movie_title: bestSubtitle.attributes.feature_details?.title,\n    movie_year: bestSubtitle.attributes.feature_details?.year,\n    imdb_id: prepareData.original_imdb_id || bestSubtitle.attributes.feature_details?.imdb_id\n  }\n};"
+      },
+      "id": "select-best",
+      "name": "Select Best Subtitle",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.opensubtitles.com/api/v1/download",
+        "authentication": "none",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { file_id: $json.file_id } }}",
+        "options": {}
+      },
+      "id": "http-download",
+      "name": "HTTP Request - Download",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const downloadResponse = $input.first().json;\nconst subtitleInfo = $input.first().json.subtitle_info || {};\n\nif (!downloadResponse || !downloadResponse.link) {\n  return {\n    success: false,\n    error: 'Download link not found',\n    message: 'Cannot get subtitle download link'\n  };\n}\n\nconst downloadLink = downloadResponse.link;\nconst fileName = downloadResponse.file_name || subtitleInfo.file_name || 'subtitle.srt';\n\nreturn {\n  success: true,\n  download_link: downloadLink,\n  file_name: fileName,\n  subtitle_info: subtitleInfo,\n  remaining_quota: downloadResponse.remaining,\n  message: 'Download link obtained successfully'\n};"
+      },
+      "id": "prepare-download",
+      "name": "Prepare Download",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.download_link }}",
+        "authentication": "none",
+        "options": {}
+      },
+      "id": "http-fetch-srt",
+      "name": "HTTP Request - Fetch SRT",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const srtContent = $input.first().json;\nconst subtitleInfo = $input.first().json.subtitle_info || {};\n\nif (!srtContent || typeof srtContent !== 'string') {\n  return {\n    success: false,\n    error: 'SRT content not found',\n    message: 'Cannot fetch subtitle file'\n  };\n}\n\n// 將完整 SRT 內容傳遞給下一個節點\nreturn {\n  success: true,\n  imdb_id: subtitleInfo.imdb_id || 'unknown',\n  language: subtitleInfo.language || 'en',\n  movie_title: subtitleInfo.movie_title || 'Unknown',\n  movie_year: subtitleInfo.movie_year,\n  srt_content: srtContent,\n  subtitle_info: subtitleInfo,\n  file_name: subtitleInfo.file_name || 'subtitle.srt',\n  total_downloads: subtitleInfo.total_downloads || 0,\n  message: 'SRT content fetched successfully'\n};"
+      },
+      "id": "parse-srt",
+      "name": "Parse SRT Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Node 9: 準備數據並保存字幕到 Turso\nconst data = $input.first().json;\n\n// 生成唯一 ID\nconst subtitleId = `subtitle_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;\nconst movieId = `movie_${data.imdb_id}`;\n\n// 準備要傳遞的數據\nreturn {\n  success: true,\n  subtitle_id: subtitleId,\n  movie_id: movieId,\n  imdb_id: data.imdb_id,\n  movie_title: data.movie_title,\n  movie_year: data.movie_year,\n  language: data.language,\n  srt_content: data.srt_content,\n  file_name: data.file_name,\n  total_downloads: data.total_downloads,\n  // 限制 SRT 長度給 Gemini 分析（前 15000 字）\n  srt_for_analysis: data.srt_content.substring(0, 15000),\n  message: 'Ready to save subtitle and analyze'\n};"
+      },
+      "id": "prepare-save-subtitle",
+      "name": "Prepare Save Subtitle",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2000, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://subtitlelingo-peterwang.aws-ap-northeast-1.turso.io/v3/execute",
+        "authentication": "none",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"sql\": \"INSERT OR REPLACE INTO movies (id, imdb_id, title, year, created_at) VALUES (?, ?, ?, ?, datetime('now'))\",\n  \"args\": [\n    \"{{ $json.movie_id }}\",\n    \"{{ $json.imdb_id }}\",\n    \"{{ $json.movie_title }}\",\n    {{ $json.movie_year || 2000 }}\n  ]\n}",
+        "options": {}
+      },
+      "id": "save-movie",
+      "name": "Save Movie to Turso",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2220, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://subtitlelingo-peterwang.aws-ap-northeast-1.turso.io/v3/execute",
+        "authentication": "none",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"sql\": \"INSERT INTO subtitles (id, movie_id, language, srt_content, file_name, download_count, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))\",\n  \"args\": [\n    \"{{ $json.subtitle_id }}\",\n    \"{{ $json.movie_id }}\",\n    \"{{ $json.language }}\",\n    \"{{ $json.srt_content }}\",\n    \"{{ $json.file_name }}\",\n    {{ $json.total_downloads || 0 }}\n  ]\n}",
+        "options": {}
+      },
+      "id": "save-subtitle",
+      "name": "Save Subtitle to Turso",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2220, 400]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Node 10: 呼叫 Google Gemini API 分析字幕\nconst data = $input.first().json;\nconst GEMINI_API_KEY = 'AIzaSyBogCVKs89gv5_DKyJeUSkS9J-U6SS-yuM';\n\nconst systemPrompt = `你是專業的英文教學助手和語言學專家。請分析以下 SRT 字幕檔案，完成兩個任務：\n\n1. 提取 20 段最重要的對話（根據以下標準選擇）：\n   - 對話長度適中（15-50 字）\n   - 包含重要劇情或情感表達\n   - 不包含純音效或環境描述（如 [LAUGHING]、[SCREAMS]、[SPEAKING IN JAPANESE]）\n   - 涵蓋整部電影的不同場景\n   - 選擇具有代表性、學習價值高的句子\n\n2. 提取 10-15 個重要生字（根據以下標準）：\n   - 中高級難度單字（B2-C1 等級）\n   - 在對話中出現的重要詞彙\n   - 包含詞性、繁體中文定義、難度等級\n   - 提供原電影中的例句和額外例句\n\n請以 JSON 格式回應，結構如下：\n{\n  \"important_dialogues\": [\n    {\n      \"content\": \"對話內容（完整英文）\",\n      \"time_start\": \"00:02:46,741\",\n      \"time_end\": \"00:02:56,644\",\n      \"translation_zh\": \"繁體中文翻譯\",\n      \"explanation\": \"語法、文化背景或學習重點說明（繁體中文）\",\n      \"difficulty_level\": \"intermediate 或 advanced\"\n    }\n  ],\n  \"vocabulary_notes\": [\n    {\n      \"word\": \"subconscious\",\n      \"part_of_speech\": \"noun (名詞)\",\n      \"definition_zh\": \"潛意識；指潛藏在意識之下的心理活動\",\n      \"level\": \"advanced\",\n      \"original_sentence\": \"That's my subconscious trying to keep the dream intact.\",\n      \"example_sentences\": [\n        \"Your subconscious can affect your decisions without you realizing it.\",\n        \"Dreams are a way to access the subconscious mind.\"\n      ]\n    }\n  ]\n}\n\n重要提醒：\n- translation_zh 必須使用繁體中文\n- explanation 必須使用繁體中文\n- definition_zh 必須使用繁體中文\n- 確保 JSON 格式正確，可以被直接解析\n- time_start 和 time_end 必須與字幕中的時間戳完全一致`;\n\nconst userPrompt = `請分析以下電影的字幕內容，提取重要對話和生字筆記：\\n\\n${data.srt_for_analysis}\\n\\n請以 JSON 格式回應，不要包含任何其他文字說明。`;\n\n// 準備 Gemini API 請求\nreturn {\n  gemini_request: {\n    url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`,\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json'\n    },\n    body: JSON.stringify({\n      contents: [{\n        parts: [{\n          text: `${systemPrompt}\\n\\n${userPrompt}`\n        }]\n      }],\n      generationConfig: {\n        temperature: 0.7,\n        topK: 40,\n        topP: 0.95,\n        maxOutputTokens: 8192\n      }\n    })\n  },\n  // 保存原始數據供後續使用\n  subtitle_id: data.subtitle_id,\n  movie_id: data.movie_id,\n  message: 'Ready to call Gemini API'\n};"
+      },
+      "id": "prepare-gemini",
+      "name": "Prepare Gemini Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2440, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.gemini_request.url }}",
+        "authentication": "none",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.parse($json.gemini_request.body) }}",
+        "options": {}
+      },
+      "id": "gemini-analyze",
+      "name": "Google Gemini Analyze",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2660, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Node 11: 解析 Gemini API 回應\nconst geminiResponse = $input.first().json;\n\n// 從上一個節點獲取 subtitle_id 和 movie_id\nconst previousData = $input.first().json.previousData || {};\n\nif (!geminiResponse || !geminiResponse.candidates || geminiResponse.candidates.length === 0) {\n  return {\n    success: false,\n    error: 'Gemini API 回應格式錯誤',\n    message: 'No candidates in response'\n  };\n}\n\nconst content = geminiResponse.candidates[0].content.parts[0].text;\n\n// 嘗試解析 JSON\ntry {\n  // 移除可能的 markdown 程式碼區塊標記\n  let jsonContent = content.trim();\n  if (jsonContent.startsWith('```json')) {\n    jsonContent = jsonContent.slice(7);\n  }\n  if (jsonContent.startsWith('```')) {\n    jsonContent = jsonContent.slice(3);\n  }\n  if (jsonContent.endsWith('```')) {\n    jsonContent = jsonContent.slice(0, -3);\n  }\n  jsonContent = jsonContent.trim();\n\n  const parsed = JSON.parse(jsonContent);\n  \n  return {\n    success: true,\n    important_dialogues: parsed.important_dialogues || [],\n    vocabulary_notes: parsed.vocabulary_notes || [],\n    dialogues_count: parsed.important_dialogues?.length || 0,\n    vocabulary_count: parsed.vocabulary_notes?.length || 0,\n    subtitle_id: previousData.subtitle_id,\n    movie_id: previousData.movie_id,\n    message: 'Gemini analysis completed successfully'\n  };\n} catch (parseError) {\n  return {\n    success: false,\n    error: 'JSON 解析失敗: ' + parseError.message,\n    raw_response: content.substring(0, 500)\n  };\n}"
+      },
+      "id": "parse-gemini",
+      "name": "Parse Gemini Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2880, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-dialogues",
+      "name": "Split Batches - Dialogues",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [3100, 200]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Node 13: 準備保存對話到 Turso\nconst dialogue = $input.first().json;\nconst parentData = $input.first().json.context || {};\n\nconst dialogueId = `dialogue_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;\n\nreturn {\n  id: dialogueId,\n  subtitle_id: parentData.subtitle_id,\n  content: dialogue.content,\n  time_start: dialogue.time_start,\n  time_end: dialogue.time_end,\n  translation_zh: dialogue.translation_zh || '',\n  explanation: dialogue.explanation || '',\n  difficulty_level: dialogue.difficulty_level || 'intermediate',\n  word_count: dialogue.content ? dialogue.content.split(' ').length : 0\n};"
+      },
+      "id": "prepare-dialogue",
+      "name": "Prepare Dialogue Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3320, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://subtitlelingo-peterwang.aws-ap-northeast-1.turso.io/v3/execute",
+        "authentication": "none",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"sql\": \"INSERT INTO important_dialogues (id, subtitle_id, content, time_start, time_end, translation_zh, explanation, difficulty_level, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))\",\n  \"args\": [\n    \"{{ $json.id }}\",\n    \"{{ $json.subtitle_id }}\",\n    \"{{ $json.content }}\",\n    \"{{ $json.time_start }}\",\n    \"{{ $json.time_end }}\",\n    \"{{ $json.translation_zh }}\",\n    \"{{ $json.explanation }}\",\n    \"{{ $json.difficulty_level }}\"\n  ]\n}",
+        "options": {}
+      },
+      "id": "save-dialogue",
+      "name": "Save Dialogue to Turso",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3540, 200]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-vocabulary",
+      "name": "Split Batches - Vocabulary",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [3100, 400]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Node 15: 準備保存生字到 Turso\nconst vocab = $input.first().json;\nconst parentData = $input.first().json.context || {};\n\nconst vocabId = `vocab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;\n\nreturn {\n  id: vocabId,\n  word: vocab.word,\n  part_of_speech: vocab.part_of_speech || '',\n  definition_zh: vocab.definition_zh || '',\n  level: vocab.level || 'intermediate',\n  original_sentence: vocab.original_sentence || '',\n  example_sentences: JSON.stringify(vocab.example_sentences || []),\n  movie_id: parentData.movie_id\n};"
+      },
+      "id": "prepare-vocab",
+      "name": "Prepare Vocabulary Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3320, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://subtitlelingo-peterwang.aws-ap-northeast-1.turso.io/v3/execute",
+        "authentication": "none",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"sql\": \"INSERT INTO vocabulary_notes (id, word, part_of_speech, definition_zh, level, original_sentence, example_sentences, movie_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))\",\n  \"args\": [\n    \"{{ $json.id }}\",\n    \"{{ $json.word }}\",\n    \"{{ $json.part_of_speech }}\",\n    \"{{ $json.definition_zh }}\",\n    \"{{ $json.level }}\",\n    \"{{ $json.original_sentence }}\",\n    \"{{ $json.example_sentences }}\",\n    \"{{ $json.movie_id }}\"\n  ]\n}",
+        "options": {}
+      },
+      "id": "save-vocab",
+      "name": "Save Vocabulary to Turso",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3540, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"字幕下載、分析和保存完成\",\n  \"data\": {\n    \"subtitle_id\": \"{{ $json.subtitle_id }}\",\n    \"movie_id\": \"{{ $json.movie_id }}\",\n    \"important_dialogues_count\": {{ $json.dialogues_count || 0 }},\n    \"vocabulary_notes_count\": {{ $json.vocabulary_count || 0 }},\n    \"status\": \"completed\"\n  }\n}",
+        "options": {}
+      },
+      "id": "response-final",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [3760, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare API Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare API Call": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Search": {
+      "main": [
+        [
+          {
+            "node": "Select Best Subtitle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Best Subtitle": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Download",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Download": {
+      "main": [
+        [
+          {
+            "node": "Prepare Download",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Download": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Fetch SRT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Fetch SRT": {
+      "main": [
+        [
+          {
+            "node": "Parse SRT Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse SRT Content": {
+      "main": [
+        [
+          {
+            "node": "Prepare Save Subtitle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Save Subtitle": {
+      "main": [
+        [
+          {
+            "node": "Save Movie to Turso",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Subtitle to Turso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Movie to Turso": {
+      "main": [
+        [
+          {
+            "node": "Prepare Gemini Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Subtitle to Turso": {
+      "main": [
+        [
+          {
+            "node": "Prepare Gemini Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Gemini Analysis": {
+      "main": [
+        [
+          {
+            "node": "Google Gemini Analyze",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Analyze": {
+      "main": [
+        [
+          {
+            "node": "Parse Gemini Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Gemini Response": {
+      "main": [
+        [
+          {
+            "node": "Split Batches - Dialogues",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Batches - Vocabulary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Batches - Dialogues": {
+      "main": [
+        [
+          {
+            "node": "Prepare Dialogue Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Dialogue Data": {
+      "main": [
+        [
+          {
+            "node": "Save Dialogue to Turso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Dialogue to Turso": {
+      "main": [
+        [
+          {
+            "node": "Split Batches - Dialogues",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Batches - Vocabulary": {
+      "main": [
+        [
+          {
+            "node": "Prepare Vocabulary Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Vocabulary Data": {
+      "main": [
+        [
+          {
+            "node": "Save Vocabulary to Turso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Vocabulary to Turso": {
+      "main": [
+        [
+          {
+            "node": "Split Batches - Vocabulary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": ["complete", "gemini", "turso", "production", "ai-analysis"]
+}

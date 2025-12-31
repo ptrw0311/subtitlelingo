@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { movieDB, vocabularyDB } from '../config/turso.js';
+import { movieDB, vocabularyDB, subtitleDB, importantDialoguesDB } from '../config/turso.js';
 
 // 備用假資料
 const fallbackMovies = [
@@ -70,44 +70,136 @@ const fakeDialogues = [
   }
 ];
 
-const fakeVocabularies = [
+// Inception 電影中的重要單字
+const inceptionVocabularies = [
   {
     id: 1,
-    word: "convince",
-    part_of_speech: "verb",
-    definition_zh: "說服，使相信",
-    level: "intermediate",
-    original_sentence: "I need to convince him to join our team.",
+    word: "subconscious",
+    part_of_speech: "名詞 (noun)",
+    definition_zh: "潛意識；指潛藏在意識之下的心理活動",
+    level: "advanced",
+    original_sentence: "That's my subconscious trying to keep the dream intact.",
     example_sentences: [
-      "She convinced me to try the new restaurant.",
-      "Can you convince the board to approve the budget?",
-      "He was convinced by the evidence."
+      "Your subconscious can affect your decisions without you realizing it.",
+      "Dreams are a way to access the subconscious mind.",
+      "He tapped into his subconscious to find creative inspiration."
     ]
   },
   {
     id: 2,
-    word: "opportunity",
-    part_of_speech: "noun",
-    definition_zh: "機會，時機",
-    level: "beginner",
-    original_sentence: "This is a great opportunity to learn something new.",
+    word: "parasite",
+    part_of_speech: "名詞 (noun)",
+    definition_zh: "寄生蟲；比喻依賴他人生存的事物",
+    level: "intermediate",
+    original_sentence: "What is the most resilient parasite? An idea.",
     example_sentences: [
-      "Don\'t miss this opportunity.",
-      "The company offers many growth opportunities.",
-      "She seized the opportunity to speak."
+      "The parasite lives inside the host's body.",
+      "Some plants are parasites that feed on other plants.",
+      "Negative thoughts can be like parasites that destroy your confidence."
     ]
   },
   {
     id: 3,
-    word: "perspective",
-    part_of_speech: "noun",
-    definition_zh: "觀點，看法",
+    word: "resilient",
+    part_of_speech: "形容詞 (adjective)",
+    definition_zh: "有彈性的；能快速恢復的",
     level: "advanced",
-    original_sentence: "From my perspective, this is the best solution.",
+    original_sentence: "An idea is resilient, highly contagious.",
     example_sentences: [
-      "Try to see it from her perspective.",
-      "The book offers a new perspective on history.",
-      "His perspective changed after the trip."
+      "Children are often more resilient than adults.",
+      "The resilient material can withstand extreme temperatures.",
+      "She showed a resilient spirit after the setback."
+    ]
+  },
+  {
+    id: 4,
+    word: "eradicate",
+    part_of_speech: "動詞 (verb)",
+    definition_zh: "根除；消滅",
+    level: "advanced",
+    original_sentence: "Once an idea has taken hold, it's almost impossible to eradicate.",
+    example_sentences: [
+      "We must eradicate poverty from our society.",
+      "The disease was completely eradicated.",
+      "It's difficult to eradicate bad habits."
+    ]
+  },
+  {
+    id: 5,
+    word: "extraction",
+    part_of_speech: "名詞 (noun)",
+    definition_zh: "提取；抽取",
+    level: "intermediate",
+    original_sentence: "Extraction is about entering a dream and stealing information.",
+    example_sentences: [
+      "The extraction of natural resources harms the environment.",
+      "Tooth extraction can be a painful procedure.",
+      "Data extraction requires specialized software."
+    ]
+  },
+  {
+    id: 6,
+    word: "inception",
+    part_of_speech: "名詞 (noun)",
+    definition_zh: "開始； inception 指在他人夢中植入想法的技術",
+    level: "advanced",
+    original_sentence: "Inception is not about stealing ideas, but planting them.",
+    example_sentences: [
+      "The project's inception dates back to last year.",
+      "Since its inception, the company has grown rapidly.",
+      "The story begins at the inception of the conflict."
+    ]
+  },
+  {
+    id: 7,
+    word: "complexity",
+    part_of_speech: "名詞 (noun)",
+    definition_zh: "複雜性",
+    level: "intermediate",
+    original_sentence: "I can't imagine you with all your complexity.",
+    example_sentences: [
+      "The complexity of the problem requires careful analysis.",
+      "She embraced the complexity of the human mind.",
+      "Technology adds complexity to our daily lives."
+    ]
+  },
+  {
+    id: 8,
+    word: "collapse",
+    part_of_speech: "動詞 (verb)",
+    definition_zh: "崩塌；倒塌",
+    level: "beginner",
+    original_sentence: "The dream is collapsing!",
+    example_sentences: [
+      "The building collapsed during the earthquake.",
+      "Her plans collapsed when funding was cut.",
+      "After working all day, he collapsed on the sofa."
+    ]
+  },
+  {
+    id: 9,
+    word: "commitment",
+    part_of_speech: "名詞 (noun)",
+    definition_zh: "承諾；投入",
+    level: "intermediate",
+    original_sentence: "I'm going to impress you with the depth of my commitment.",
+    example_sentences: [
+      "He shows great commitment to his work.",
+      "Marriage requires true commitment from both partners.",
+      "Her commitment to learning languages is impressive."
+    ]
+  },
+  {
+    id: 10,
+    word: "convinced",
+    part_of_speech: "形容詞/動詞過去式 (adjective/past verb)",
+    definition_zh: "被說服的；確信的",
+    level: "beginner",
+    original_sentence: "I'm convinced this is the only way to do it.",
+    example_sentences: [
+      "She convinced me to join the team.",
+      "I'm convinced that he's telling the truth.",
+      "They were convinced by the evidence presented."
     ]
   }
 ];
@@ -119,13 +211,25 @@ function HomePage() {
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [movies, setMovies] = useState([]);
   const [vocabularies, setVocabularies] = useState([]);
+  const [subtitles, setSubtitles] = useState(null);
+  const [dialogues, setDialogues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedDialogueId, setExpandedDialogueId] = useState(null);
 
   // 載入資料
   useEffect(() => {
     loadData();
   }, []);
+
+  // 載入影片字幕
+  useEffect(() => {
+    if (selectedMovie) {
+      loadSubtitles(selectedMovie.id);
+    } else {
+      setSubtitles(null);
+    }
+  }, [selectedMovie]);
 
   const loadData = async () => {
     try {
@@ -145,19 +249,218 @@ function HomePage() {
       }
 
       setMovies(moviesData.length > 0 ? moviesData : fallbackMovies);
-      setVocabularies(vocabData);
+      // 如果資料庫沒有生字資料，使用 Inception 生字列表
+      setVocabularies(vocabData.length > 0 ? vocabData : inceptionVocabularies);
 
       console.log(`📊 載入 ${moviesData.length} 部影片，${vocabData.length} 個生字`);
 
     } catch (err) {
       console.error('載入資料失敗:', err);
       setError('載入資料失敗，顯示示範資料');
-      // 使用備用資料
+      // 使用備用資料（Inception 生字）
       setMovies(fallbackMovies);
-      setVocabularies(fakeVocabularies);
+      setVocabularies(inceptionVocabularies);
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadSubtitles = async (movieId) => {
+    try {
+      console.log(`📝 正在載入影片 ${movieId} 的字幕...`);
+
+      // 載入字幕內容
+      const { data: subtitlesData, error: subtitlesError } = await subtitleDB.getByMovieId(movieId);
+
+      if (subtitlesError) {
+        throw subtitlesError;
+      }
+
+      if (subtitlesData && subtitlesData.length > 0) {
+        const srtContent = subtitlesData[0].srt_content;
+        setSubtitles(srtContent);
+        console.log(`✅ 字幕載入成功，${srtContent.length} 字元`);
+      } else {
+        setSubtitles(null);
+        console.log('⚠️ 該影片暫無字幕資料');
+      }
+
+      // 載入重要對話（從資料庫，不是解析 SRT）
+      const { data: dialoguesData, error: dialoguesError } = await importantDialoguesDB.getByMovieId(movieId);
+
+      if (dialoguesError) {
+        throw dialoguesError;
+      }
+
+      if (dialoguesData && dialoguesData.length > 0) {
+        // 資料庫中的對話格式，映射欄位名稱
+        const formattedDialogues = dialoguesData.map(d => ({
+          ...d,
+          text: d.content,  // 映射 content → text
+          translation: d.translation_zh || d.translation || '翻譯載入中...',
+          timeStart: d.time_start,  // 映射 time_start → timeStart
+          timeEnd: d.time_end,      // 映射 time_end → timeEnd
+          sequence: d.sequence || d.id
+        }));
+        setDialogues(formattedDialogues);
+        console.log(`💬 從資料庫載入 ${formattedDialogues.length} 段重要對話`);
+      } else {
+        // 如果資料庫沒有對話資料，使用解析後的備用資料
+        if (subtitlesData && subtitlesData.length > 0) {
+          const parsedDialogues = parseDialoguesFromSRT(subtitlesData[0].srt_content);
+          setDialogues(parsedDialogues);
+          console.log(`💬 解析出 ${parsedDialogues.length} 段對話（備用）`);
+        } else {
+          setDialogues([]);
+        }
+      }
+
+      // 載入生字筆記
+      const { data: vocabData, error: vocabError } = await vocabularyDB.getByMovieId(movieId);
+
+      if (vocabError) {
+        throw vocabError;
+      }
+
+      if (vocabData && vocabData.length > 0) {
+        // 處理 example_sentences JSON 欄位
+        const formattedVocabs = vocabData.map(v => ({
+          ...v,
+          example_sentences: v.example_sentences && typeof v.example_sentences === 'string'
+            ? JSON.parse(v.example_sentences)
+            : v.example_sentences || []
+        }));
+        setVocabularies(formattedVocabs);
+        console.log(`📚 從資料庫載入 ${formattedVocabs.length} 個生字`);
+      } else {
+        // 如果資料庫沒有生字資料，保留現有的生字列表
+        console.log('⚠️ 該影片暫無生字筆記資料');
+      }
+
+    } catch (err) {
+      console.error('載入字幕失敗:', err);
+      setSubtitles(null);
+      setDialogues([]);
+    }
+  };
+
+  // 簡單的翻譯映射（Inception 電影中的關鍵對話）
+  const translations = {
+    "You mustn't be afraid to dream a little bigger, darling.": "親愛的，你不該害怕夢想得更宏大一點。",
+    "What is the most resilient parasite? A bacteria? A virus? An intestinal worm?": "最強韌的寄生蟲是什麼？細菌？病毒？還是腸道寄生蟲？",
+    "An idea. Resilient, highly contagious. Once an idea has taken hold of the brain, it's almost impossible to eradicate.": "一個點子。強韌且高度傳染。一旦一個點子在腦中生根，就幾乎不可能根除。",
+    "The dream is collapsing.": "夢境正在崩塌。",
+    "I'm going to impress you with the depth of my commitment.": "我要讓你見識我決心的深度。",
+    "You're waiting for a train. A train that will take you far away.": "你在等一列火車。一列會帶你遠走的火車。",
+    "You know where you hope this train will take you, but you can't know for sure.": "你希望這列火車帶你去哪裡，但你無法確定。",
+    "But it doesn't matter. Because we'll be together.": "但這不重要。因為我們會在一起。",
+    "I can't stay with her anymore because she doesn't exist.": "我不能再和她在一起了，因為她不存在。",
+    "I wish. I wish more than anything. But I can't imagine you with all your complexity, all your perfection and imperfection.": "我希望。我比什麼都希望。但我無法想像你所有的複雜，你所有的完美和不完美。",
+    "You're talking about dreams, right?": "你在說夢境，對吧？",
+    "Dreams feel real while we're in them. It's only when we wake up that we realize something was actually strange.": "做夢時感覺很真實。只有醒來時才意識到有些地方其實很奇怪。",
+    "We need to get deeper.": "我們需要進入更深的層次。",
+    "The stronger the issues, the more powerful the extraction.": "問題越強烈，抽取就越強大。",
+    "I bought the airline. It seemed neater.": "我買下了航空公司。這樣看起來更整潔。",
+    "He was destroyed by it.": "他被它毀了。",
+    "That's my subconscious.": "那是我的潛意識。",
+    "They're attacking my subconscious.": "他們在攻擊我的潛意識。"
+  };
+
+  // 解析 SRT 字幕並提取對話
+  const parseDialoguesFromSRT = (srtContent) => {
+    // SRT 格式解析
+    const lines = srtContent.split('\n');
+    const dialogues = [];
+    let currentDialogue = null;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      // 空行表示一段字幕結束
+      if (!line) {
+        if (currentDialogue && currentDialogue.text) {
+          // 只保留有實際文字內容的對話（過濾掉 [LAUGHING]、[SCREAMS] 等音效描述）
+          const hasSpokenText = currentDialogue.text.match(/[a-zA-Z]{3,}/);
+          if (hasSpokenText) {
+            // 添加翻譯
+            const text = currentDialogue.text.trim();
+            const translation = translations[text] || translateText(text);
+            dialogues.push({ ...currentDialogue, text, translation });
+          }
+        }
+        currentDialogue = null;
+        continue;
+      }
+
+      // 序號行
+      if (/^\d+$/.test(line)) {
+        if (!currentDialogue) {
+          currentDialogue = { sequence: parseInt(line), timeStart: '', timeEnd: '', text: '' };
+        }
+        continue;
+      }
+
+      // 時間軸行 (00:00:00,000 --> 00:00:00,000)
+      if (line.includes('-->')) {
+        if (currentDialogue) {
+          const times = line.split('-->');
+          currentDialogue.timeStart = times[0].trim();
+          currentDialogue.timeEnd = times[1].trim();
+        }
+        continue;
+      }
+
+      // 文字內容行
+      if (currentDialogue && line) {
+        if (currentDialogue.text) {
+          currentDialogue.text += ' ' + line;
+        } else {
+          currentDialogue.text = line;
+        }
+      }
+    }
+
+    // 處理最後一段對話
+    if (currentDialogue && currentDialogue.text) {
+      const hasSpokenText = currentDialogue.text.match(/[a-zA-Z]{3,}/);
+      if (hasSpokenText) {
+        const text = currentDialogue.text.trim();
+        const translation = translations[text] || translateText(text);
+        dialogues.push({ ...currentDialogue, text, translation });
+      }
+    }
+
+    // 選擇前 20 段較長的重要對話
+    return dialogues
+      .filter(d => d.text && d.text.length > 20) // 只保留超過 20 字元的對話
+      .sort((a, b) => b.text.length - a.text.length) // 按長度排序
+      .slice(0, 20); // 取前 20 段
+  };
+
+  // 簡單的翻譯函數（基於規則的基礎翻譯）
+  const translateText = (text) => {
+    // 對於不在映射表中的文本，提供簡單的翻譯提示
+    const commonWords = {
+      'dream': '夢境',
+      'reality': '現實',
+      'subconscious': '潛意識',
+      'idea': '點子',
+      'extraction': '抽取',
+      'inception': '植入',
+      'level': '層次',
+      'time': '時間',
+      'wake': '醒來',
+      'believe': '相信',
+      'together': '在一起'
+    };
+
+    let translated = text;
+    Object.keys(commonWords).forEach(eng => {
+      const regex = new RegExp(`\\b${eng}\\b`, 'gi');
+      translated = translated.replace(regex, commonWords[eng]);
+    });
+
+    return translated + ' (翻譯)';
   };
 
   // 搜尋影片
@@ -361,35 +664,57 @@ function HomePage() {
                   <div>
                     <h3 className="text-xl font-semibold mb-4">完整字幕</h3>
                     <div className="prose prose-invert max-w-none">
-                      <p className="text-slate-300 leading-relaxed">
-                        字幕內容載入中... 這裡將顯示完整的 SRT 字幕檔案內容，包含時間軸資訊。
-                      </p>
+                      {subtitles ? (
+                        <pre className="text-slate-300 leading-relaxed whitespace-pre-wrap text-sm bg-slate-900/50 p-4 rounded-lg overflow-auto max-h-[600px]">
+                          {subtitles}
+                        </pre>
+                      ) : (
+                        <p className="text-slate-400 leading-relaxed">
+                          載入中... 該影片暫無字幕資料
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
 
                 {activeTab === 'dialogue' && (
                   <div>
-                    <h3 className="text-xl font-semibold mb-4">重要對話</h3>
-                    <div className="space-y-4">
-                      {fakeDialogues.map((dialogue) => (
-                        <div key={dialogue.id} className="bg-slate-800/50 rounded-lg p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <span className="text-blue-400 text-sm font-mono">
-                              {dialogue.time_start} - {dialogue.time_end}
-                            </span>
-                          </div>
-                          <p className="text-white text-lg mb-3 italic">
-                            "{dialogue.content}"
-                          </p>
-                          <div className="bg-slate-900/50 rounded p-3">
-                            <p className="text-amber-400 text-sm">
-                              💡 {dialogue.explanation}
+                    <h3 className="text-xl font-semibold mb-4">重要對話 <span className="text-sm text-slate-400 font-normal">(點擊查看翻譯)</span></h3>
+                    {dialogues.length > 0 ? (
+                      <div className="space-y-4">
+                        {dialogues.map((dialogue, index) => (
+                          <div
+                            key={index}
+                            onClick={() => setExpandedDialogueId(expandedDialogueId === index ? null : index)}
+                            className="bg-slate-800/50 rounded-lg p-4 cursor-pointer hover:bg-slate-700/50 transition-all duration-200"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="text-blue-400 text-sm font-mono">
+                                {dialogue.timeStart} - {dialogue.timeEnd}
+                              </span>
+                              <span className="text-slate-500 text-xs">
+                                #{dialogue.sequence}
+                              </span>
+                            </div>
+                            <p className="text-white text-lg mb-2 italic">
+                              "{dialogue.text}"
                             </p>
+                            {expandedDialogueId === index && (
+                              <div className="bg-slate-900/50 rounded p-3 mt-3 animate-fadeIn">
+                                <p className="text-emerald-400 text-sm">
+                                  🇹🇼 {dialogue.translation || '翻譯載入中...'}
+                                </p>
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-slate-400">
+                        <div className="text-4xl mb-2">💬</div>
+                        <p>載入中... 該影片暫無對話資料</p>
+                      </div>
+                    )}
                   </div>
                 )}
 
