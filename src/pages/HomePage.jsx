@@ -500,10 +500,10 @@ function HomePage() {
       <aside className="sidebar">
         <div className="p-4 flex flex-col" style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
           <h1
-            className="font-bold mb-6 text-center"
+            className="font-bold mb-4 text-center"
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '13px',
+              fontSize: '18px',
               lineHeight: '1.4',
               wordWrap: 'break-word',
               overflowWrap: 'break-word'
@@ -513,6 +513,13 @@ function HomePage() {
               SubtitleLingo
             </span>
           </h1>
+
+          {/* 作者資訊 - 移至標題下方 */}
+          <div className="mb-6 text-center">
+            <p className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
+              🎬 produced by Peter Wang
+            </p>
+          </div>
 
           {/* 搜尋框 */}
           <div className="mb-6">
@@ -596,24 +603,6 @@ function HomePage() {
                 )}
               </div>
             )}
-          </div>
-
-          {/* 作者資訊 - 固定在左下角 */}
-          <div
-            className="pt-4 border-t border-slate-700/50 text-center"
-            style={{
-              position: 'absolute',
-              bottom: '16px',
-              left: '16px',
-              right: '16px',
-              backgroundColor: 'var(--bg-secondary)',
-              borderRadius: '8px',
-              padding: '12px'
-            }}
-          >
-            <p className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
-              🎬 produced by Peter Wang
-            </p>
           </div>
         </div>
       </aside>

@@ -168,7 +168,7 @@ select:focus {
 }
 
 .page-title {
-  font-size: 24px;
+  font-size: 19px;
   font-weight: 700;
   font-family: var(--font-display);
   background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-color) 100%);
