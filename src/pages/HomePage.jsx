@@ -498,8 +498,14 @@ function HomePage() {
     <div className="app-container">
       {/* 側邊欄 */}
       <aside className="sidebar">
-        <div className="p-4 flex flex-col h-full">
-          <h1 className="text-base font-bold mb-6 text-center" style={{ fontFamily: 'var(--font-display)' }}>
+        <div className="p-4 flex flex-col" style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
+          <h1
+            className="font-bold mb-6 text-center"
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '14px'
+            }}
+          >
             <span className="bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">
               SubtitleLingo
             </span>
@@ -520,7 +526,7 @@ function HomePage() {
           </div>
 
           {/* 影片列表 */}
-          <div className="flex-1">
+          <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '60px' }}>
             <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-display)' }}>
               熱門影片
               {loading && <span className="text-xs text-slate-500 ml-2">載入中...</span>}
@@ -592,8 +598,19 @@ function HomePage() {
             )}
           </div>
 
-          {/* 作者資訊 */}
-          <div className="mt-6 pt-4 border-t border-slate-700/50 text-center">
+          {/* 作者資訊 - 固定在左下角 */}
+          <div
+            className="pt-4 border-t border-slate-700/50 text-center"
+            style={{
+              position: 'absolute',
+              bottom: '16px',
+              left: '16px',
+              right: '16px',
+              backgroundColor: 'var(--bg-secondary)',
+              borderRadius: '8px',
+              padding: '12px'
+            }}
+          >
             <p className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
               🎬 produced by Peter Wang
             </p>
