@@ -5,12 +5,12 @@ import { movieDB, vocabularyDB, subtitleDB, importantDialoguesDB } from '../conf
 // 備用假資料
 const fallbackMovies = [
   {
-    id: 'tt0111161',
-    title: 'The Shawshank Redemption',
-    year: 1994,
+    id: 'tt14364480',
+    title: 'Wake Up Dead Man: A Knives Out Mystery',
+    year: 2025,
     type: 'movie',
-    poster_url: 'https://images.unsplash.com/photo-1489599113536-21c2b9b3bc19?w=300&h=450&fit=crop',
-    download_count: 1250000
+    poster_url: 'https://images.unsplash.com/photo-1535016120720-40c6874c3b1c?w=300&h=450&fit=crop',
+    download_count: 2800000
   },
   {
     id: 'tt0068646',
@@ -498,9 +498,9 @@ function HomePage() {
     <div className="app-container">
       {/* 側邊欄 */}
       <aside className="sidebar">
-        <div className="p-4">
-          <h1 className="text-2xl font-bold mb-6 text-center">
-            <span className="bg-gradient-to-r from-blue-400 to-amber-400 bg-clip-text text-transparent">
+        <div className="p-4 flex flex-col h-full">
+          <h1 className="text-base font-bold mb-6 text-center" style={{ fontFamily: 'var(--font-display)' }}>
+            <span className="bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">
               SubtitleLingo
             </span>
           </h1>
@@ -513,14 +513,15 @@ function HomePage() {
                 placeholder="🔍 搜尋影片..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all duration-200"
+                style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-subtle)' }}
               />
             </div>
           </div>
 
           {/* 影片列表 */}
-          <div>
-            <h2 className="text-lg font-semibold mb-4 text-slate-300">
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-display)' }}>
               熱門影片
               {loading && <span className="text-xs text-slate-500 ml-2">載入中...</span>}
             </h2>
@@ -564,18 +565,22 @@ function HomePage() {
                   onClick={() => setSelectedMovie(movie)}
                   className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
                     selectedMovie?.id === movie.id
-                      ? 'bg-blue-600/20 border border-blue-500/50'
+                      ? 'bg-red-600/20 border border-red-500/50'
                       : 'bg-slate-800/50 hover:bg-slate-700/50 border border-transparent'
                   }`}
+                  style={{
+                    backgroundColor: selectedMovie?.id === movie.id ? 'rgba(220, 38, 17, 0.2)' : 'var(--bg-secondary)',
+                    borderColor: selectedMovie?.id === movie.id ? 'rgba(239, 68, 68, 0.5)' : 'transparent'
+                  }}
                 >
                   <div className="flex items-start space-x-3">
                     <div className="flex-shrink-0">
                       {movie.type === 'movie' ? '🎬' : '📺'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-white font-medium truncate">{movie.title}</h3>
-                      <p className="text-slate-400 text-sm">{movie.year}</p>
-                      <p className="text-slate-500 text-xs mt-1">
+                      <h3 className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>{movie.title}</h3>
+                      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{movie.year}</p>
+                      <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
                         {movie.download_count.toLocaleString()} 次下載
                       </p>
                     </div>
@@ -585,6 +590,13 @@ function HomePage() {
                 )}
               </div>
             )}
+          </div>
+
+          {/* 作者資訊 */}
+          <div className="mt-6 pt-4 border-t border-slate-700/50 text-center">
+            <p className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
+              🎬 produced by Peter Wang
+            </p>
           </div>
         </div>
       </aside>
@@ -607,12 +619,28 @@ function HomePage() {
             {selectedMovie && (
               <div className="flex space-x-4">
                 <Link to={`/practice/${selectedMovie.id}`}>
-                  <button className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-lg hover:shadow-amber-500/25">
+                  <button
+                    className="px-6 py-3 text-white font-medium rounded-lg transition-all duration-200 shadow-lg"
+                    style={{
+                      backgroundColor: 'var(--accent-color)',
+                      fontFamily: 'var(--font-body)'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-dark)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-color)'}
+                  >
                     🎯 開始練習
                   </button>
                 </Link>
                 <Link to="/stats">
-                  <button className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors duration-200">
+                  <button
+                    className="px-6 py-3 text-white font-medium rounded-lg transition-all duration-200"
+                    style={{
+                      backgroundColor: 'var(--bg-tertiary)',
+                      fontFamily: 'var(--font-body)'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-light)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
+                  >
                     📊 學習統計
                   </button>
                 </Link>
@@ -630,9 +658,13 @@ function HomePage() {
                   onClick={() => setActiveTab('subtitle')}
                   className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                     activeTab === 'subtitle'
-                      ? 'bg-blue-600 text-white shadow-lg'
+                      ? 'bg-red-600 text-white shadow-lg'
                       : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                   }`}
+                  style={{
+                    backgroundColor: activeTab === 'subtitle' ? 'var(--primary-color)' : 'var(--bg-tertiary)',
+                    color: activeTab === 'subtitle' ? 'var(--text-primary)' : 'var(--text-secondary)'
+                  }}
                 >
                   📝 完整字幕
                 </button>
@@ -640,9 +672,13 @@ function HomePage() {
                   onClick={() => setActiveTab('dialogue')}
                   className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                     activeTab === 'dialogue'
-                      ? 'bg-blue-600 text-white shadow-lg'
+                      ? 'bg-red-600 text-white shadow-lg'
                       : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                   }`}
+                  style={{
+                    backgroundColor: activeTab === 'dialogue' ? 'var(--primary-color)' : 'var(--bg-tertiary)',
+                    color: activeTab === 'dialogue' ? 'var(--text-primary)' : 'var(--text-secondary)'
+                  }}
                 >
                   💬 重要對話
                 </button>
@@ -650,9 +686,13 @@ function HomePage() {
                   onClick={() => setActiveTab('vocabulary')}
                   className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                     activeTab === 'vocabulary'
-                      ? 'bg-blue-600 text-white shadow-lg'
+                      ? 'bg-red-600 text-white shadow-lg'
                       : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                   }`}
+                  style={{
+                    backgroundColor: activeTab === 'vocabulary' ? 'var(--primary-color)' : 'var(--bg-tertiary)',
+                    color: activeTab === 'vocabulary' ? 'var(--text-primary)' : 'var(--text-secondary)'
+                  }}
                 >
                   📚 生字筆記
                 </button>
@@ -686,22 +726,32 @@ function HomePage() {
                           <div
                             key={index}
                             onClick={() => setExpandedDialogueId(expandedDialogueId === index ? null : index)}
-                            className="bg-slate-800/50 rounded-lg p-4 cursor-pointer hover:bg-slate-700/50 transition-all duration-200"
+                            className="rounded-lg p-4 cursor-pointer hover:bg-slate-700/50 transition-all duration-200"
+                            style={{
+                              backgroundColor: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)'
+                            }}
                           >
                             <div className="flex justify-between items-start mb-2">
-                              <span className="text-blue-400 text-sm font-mono">
+                              <span className="text-sm font-mono" style={{ color: 'var(--accent-color)' }}>
                                 {dialogue.timeStart} - {dialogue.timeEnd}
                               </span>
-                              <span className="text-slate-500 text-xs">
+                              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                                 #{dialogue.sequence}
                               </span>
                             </div>
-                            <p className="text-white text-lg mb-2 italic">
+                            <p className="text-lg mb-2 italic" style={{ color: 'var(--text-primary)' }}>
                               "{dialogue.text}"
                             </p>
                             {expandedDialogueId === index && (
-                              <div className="bg-slate-900/50 rounded p-3 mt-3 animate-fadeIn">
-                                <p className="text-emerald-400 text-sm">
+                              <div
+                                className="rounded p-3 mt-3 animate-fadeIn"
+                                style={{
+                                  backgroundColor: 'var(--bg-tertiary)',
+                                  border: '1px solid var(--accent-color)'
+                                }}
+                              >
+                                <p className="text-sm" style={{ color: 'var(--success-color)' }}>
                                   🇹🇼 {dialogue.translation || '翻譯載入中...'}
                                 </p>
                               </div>
@@ -732,6 +782,10 @@ function HomePage() {
                                 ? 'bg-amber-500 text-white'
                                 : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                             }`}
+                            style={{
+                              backgroundColor: selectedLevel === level ? 'var(--accent-color)' : 'var(--bg-tertiary)',
+                              color: selectedLevel === level ? 'var(--text-primary)' : 'var(--text-secondary)'
+                            }}
                           >
                             {level === 'all' ? '全部' :
                              level === 'beginner' ? '初級' :
@@ -742,32 +796,49 @@ function HomePage() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {filteredVocabularies.map((vocab) => (
-                        <div key={vocab.id} className="bg-slate-800/50 rounded-lg p-4">
+                        <div
+                          key={vocab.id}
+                          className="rounded-lg p-4"
+                          style={{
+                            backgroundColor: 'var(--bg-secondary)',
+                            border: '1px solid var(--border-subtle)'
+                          }}
+                        >
                           <div className="flex justify-between items-start mb-2">
-                            <h4 className="text-lg font-semibold text-white">
+                            <h4 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
                               {vocab.word}
                             </h4>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              vocab.level === 'beginner' ? 'bg-green-600 text-white' :
-                              vocab.level === 'intermediate' ? 'bg-blue-600 text-white' :
-                              'bg-red-600 text-white'
-                            }`}>
+                            <span
+                              className="px-2 py-1 rounded text-xs font-medium"
+                              style={{
+                                backgroundColor: vocab.level === 'beginner' ? 'var(--success-color)' :
+                                                 vocab.level === 'intermediate' ? 'var(--primary-light)' :
+                                                 'var(--error-color)',
+                                color: 'var(--text-primary)'
+                              }}
+                            >
                               {vocab.level === 'beginner' ? '初級' :
                                vocab.level === 'intermediate' ? '中級' : '高級'}
                             </span>
                           </div>
-                          <p className="text-slate-400 text-sm mb-2">
+                          <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                             {vocab.part_of_speech} • {vocab.definition_zh}
                           </p>
-                          <div className="bg-slate-900/50 rounded p-2 mb-2">
-                            <p className="text-amber-400 text-sm italic">
+                          <div
+                            className="rounded p-2 mb-2"
+                            style={{
+                              backgroundColor: 'var(--bg-tertiary)',
+                              border: '1px solid var(--accent-color)'
+                            }}
+                          >
+                            <p className="text-sm italic" style={{ color: 'var(--accent-color)' }}>
                               "{vocab.original_sentence}"
                             </p>
                           </div>
                           <div className="space-y-1">
-                            <p className="text-slate-500 text-xs">例句：</p>
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>例句：</p>
                             {vocab.example_sentences.map((example, idx) => (
-                              <p key={idx} className="text-slate-300 text-sm">
+                              <p key={idx} className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                                 • {example}
                               </p>
                             ))}
@@ -783,10 +854,10 @@ function HomePage() {
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
                 <div className="text-6xl mb-4">🎬</div>
-                <h3 className="text-xl font-semibold text-white mb-2">
+                <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
                   歡迎來到 SubtitleLingo
                 </h3>
-                <p className="text-slate-400">
+                <p className="text-slate-400" style={{ color: 'var(--text-secondary)' }}>
                   從左側選擇一部影片，開始您的英文學習之旅
                 </p>
               </div>
