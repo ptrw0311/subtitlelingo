@@ -509,7 +509,7 @@ function HomePage() {
               overflowWrap: 'break-word'
             }}
           >
-            <span className="bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">
+            🎞️ <span className="bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">
               SubtitleLingo
             </span>
           </h1>

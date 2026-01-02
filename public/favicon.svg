@@ -1,20 +1,3 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <!-- 背景圓形 -->
-  <circle cx="64" cy="64" r="60" fill="#dc2611"/>
-
-  <!-- 電影膠捲盤 - 左側 -->
-  <circle cx="40" cy="64" r="18" fill="#1a1a1a" stroke="#d97706" stroke-width="3"/>
-  <circle cx="40" cy="64" r="8" fill="#d97706" opacity="0.8"/>
-  <circle cx="40" cy="64" r="3" fill="#1a1a1a"/>
-
-  <!-- 電影膠捲盤 - 右側 -->
-  <circle cx="88" cy="64" r="18" fill="#1a1a1a" stroke="#d97706" stroke-width="3"/>
-  <circle cx="88" cy="64" r="8" fill="#d97706" opacity="0.8"/>
-  <circle cx="88" cy="64" r="3" fill="#1a1a1a"/>
-
-  <!-- 膠捲帶 -->
-  <rect x="58" y="50" width="12" height="28" fill="#d97706" opacity="0.6"/>
-
-  <!-- 字母 SL -->
-  <text x="64" y="108" font-family="Georgia, serif" font-size="20" font-weight="bold" fill="#d97706" text-anchor="middle">SL</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <text y=".9em" font-size="90">🎞️</text>
 </svg>
