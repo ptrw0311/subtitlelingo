@@ -503,7 +503,7 @@ function HomePage() {
             className="font-bold mb-6 text-center"
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '14px'
+              fontSize: '17px'
             }}
           >
             <span className="bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">
@@ -586,9 +586,6 @@ function HomePage() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>{movie.title}</h3>
                       <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{movie.year}</p>
-                      <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                        {movie.download_count.toLocaleString()} 次下載
-                      </p>
                     </div>
                   </div>
                 </div>
