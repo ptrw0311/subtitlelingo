@@ -503,7 +503,10 @@ function HomePage() {
             className="font-bold mb-6 text-center"
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '17px'
+              fontSize: '13px',
+              lineHeight: '1.4',
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word'
             }}
           >
             <span className="bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">
