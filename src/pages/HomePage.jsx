@@ -517,7 +517,7 @@ function HomePage() {
           {/* 作者資訊 - 移至標題下方 */}
           <div className="mb-6 text-center">
             <p className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
-              🎬 produced by Peter Wang
+              ✍️ produced by Peter Wang
             </p>
           </div>
 
