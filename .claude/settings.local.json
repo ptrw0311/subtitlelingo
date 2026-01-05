@@ -45,7 +45,24 @@
       "mcp__n8n-mcp__import_workflow",
       "Bash(python3:*)",
       "Bash(start:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_console_messages",
+      "Bash(ping:*)",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_click",
+      "Bash(npm search @modelcontextprotocol)",
+      "Bash(npm search:*)",
+      "Bash(export:*)",
+      "Bash(export TURSO_AUTH_TOKEN:*)",
+      "mcp__turso__query",
+      "Bash(taskkill:*)",
+      "Bash(gh run list:*)",
+      "Skill(frontend-design)",
+      "Bash(gh api:*)",
+      "Bash(git checkout:*)",
+      "Skill(ui-ux-pro-max)"
     ]
   },
   "enableAllProjectMcpServers": true

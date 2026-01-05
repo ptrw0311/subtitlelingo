@@ -503,8 +503,9 @@ function HomePage() {
             className="font-bold mb-4 text-center"
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '18px',
-              lineHeight: '1.4',
+              fontSize: '24px',      /* 從 18px 提升 */
+              lineHeight: '1.3',
+              letterSpacing: '-0.02em',
               wordWrap: 'break-word',
               overflowWrap: 'break-word'
             }}
@@ -516,7 +517,7 @@ function HomePage() {
 
           {/* 作者資訊 - 移至標題下方 */}
           <div className="mb-6 text-center">
-            <p className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
+            <p className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)', fontSize: '13px' }}>
               ✍️ produced by Peter Wang
             </p>
           </div>
@@ -579,14 +580,26 @@ function HomePage() {
                 <div
                   key={movie.id}
                   onClick={() => setSelectedMovie(movie)}
-                  className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
-                    selectedMovie?.id === movie.id
-                      ? 'bg-red-600/20 border border-red-500/50'
-                      : 'bg-slate-800/50 hover:bg-slate-700/50 border border-transparent'
-                  }`}
+                  className={`p-3 rounded-lg cursor-pointer transition-all`}
                   style={{
-                    backgroundColor: selectedMovie?.id === movie.id ? 'rgba(220, 38, 17, 0.2)' : 'var(--bg-secondary)',
-                    borderColor: selectedMovie?.id === movie.id ? 'rgba(239, 68, 68, 0.5)' : 'transparent'
+                    backgroundColor: selectedMovie?.id === movie.id ? 'rgba(220, 38, 38, 0.2)' : 'var(--bg-secondary)',
+                    borderColor: selectedMovie?.id === movie.id ? 'rgba(239, 68, 68, 0.5)' : 'transparent',
+                    border: selectedMovie?.id === movie.id ? '1px solid' : '1px solid var(--border-subtle)',
+                    marginBottom: '0.75rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedMovie?.id !== movie.id) {
+                      e.currentTarget.style.transform = 'translateX(4px)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.2)';
+                      e.currentTarget.style.borderColor = 'var(--accent-color)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedMovie?.id !== movie.id) {
+                      e.currentTarget.style.transform = 'translateX(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                      e.currentTarget.style.borderColor = 'transparent';
+                    }
                   }}
                 >
                   <div className="flex items-start space-x-3">
@@ -594,8 +607,8 @@ function HomePage() {
                       {movie.type === 'movie' ? '🎬' : '📺'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>{movie.title}</h3>
-                      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{movie.year}</p>
+                      <h3 className="font-medium truncate" style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: '600' }}>{movie.title}</h3>
+                      <p className="text-sm" style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{movie.year}</p>
                     </div>
                   </div>
                 </div>
@@ -626,26 +639,42 @@ function HomePage() {
               <div className="flex space-x-4">
                 <Link to={`/practice/${selectedMovie.id}`}>
                   <button
-                    className="px-6 py-3 text-white font-medium rounded-lg transition-all duration-200 shadow-lg"
+                    className="px-6 py-3 text-white font-medium rounded-lg shadow-lg"
                     style={{
                       backgroundColor: 'var(--accent-color)',
-                      fontFamily: 'var(--font-body)'
+                      fontFamily: 'var(--font-body)',
+                      transition: 'all 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-dark)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-color)'}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--accent-dark)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(251, 191, 36, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--accent-color)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.3)';
+                    }}
                   >
                     🎯 開始練習
                   </button>
                 </Link>
                 <Link to="/stats">
                   <button
-                    className="px-6 py-3 text-white font-medium rounded-lg transition-all duration-200"
+                    className="px-6 py-3 text-white font-medium rounded-lg"
                     style={{
                       backgroundColor: 'var(--bg-tertiary)',
-                      fontFamily: 'var(--font-body)'
+                      fontFamily: 'var(--font-body)',
+                      transition: 'all 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-light)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--primary-color)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }}
                   >
                     📊 學習統計
                   </button>
@@ -662,42 +691,63 @@ function HomePage() {
               <div className="flex space-x-2 mb-6">
                 <button
                   onClick={() => setActiveTab('subtitle')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    activeTab === 'subtitle'
-                      ? 'bg-red-600 text-white shadow-lg'
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                  }`}
+                  className="px-4 py-2 rounded-lg font-medium transition-all"
                   style={{
                     backgroundColor: activeTab === 'subtitle' ? 'var(--primary-color)' : 'var(--bg-tertiary)',
-                    color: activeTab === 'subtitle' ? 'var(--text-primary)' : 'var(--text-secondary)'
+                    color: activeTab === 'subtitle' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== 'subtitle') {
+                      e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== 'subtitle') {
+                      e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
+                    }
                   }}
                 >
                   📝 完整字幕
                 </button>
                 <button
                   onClick={() => setActiveTab('dialogue')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    activeTab === 'dialogue'
-                      ? 'bg-red-600 text-white shadow-lg'
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                  }`}
+                  className="px-4 py-2 rounded-lg font-medium transition-all"
                   style={{
                     backgroundColor: activeTab === 'dialogue' ? 'var(--primary-color)' : 'var(--bg-tertiary)',
-                    color: activeTab === 'dialogue' ? 'var(--text-primary)' : 'var(--text-secondary)'
+                    color: activeTab === 'dialogue' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== 'dialogue') {
+                      e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== 'dialogue') {
+                      e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
+                    }
                   }}
                 >
                   💬 重要對話
                 </button>
                 <button
                   onClick={() => setActiveTab('vocabulary')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    activeTab === 'vocabulary'
-                      ? 'bg-red-600 text-white shadow-lg'
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                  }`}
+                  className="px-4 py-2 rounded-lg font-medium transition-all"
                   style={{
                     backgroundColor: activeTab === 'vocabulary' ? 'var(--primary-color)' : 'var(--bg-tertiary)',
-                    color: activeTab === 'vocabulary' ? 'var(--text-primary)' : 'var(--text-secondary)'
+                    color: activeTab === 'vocabulary' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== 'vocabulary') {
+                      e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== 'vocabulary') {
+                      e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
+                    }
                   }}
                 >
                   📚 生字筆記
@@ -708,14 +758,14 @@ function HomePage() {
               <div className="card">
                 {activeTab === 'subtitle' && (
                   <div>
-                    <h3 className="text-xl font-semibold mb-4">完整字幕</h3>
+                    <h3 className="text-xl font-semibold mb-4" style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: '600' }}>完整字幕</h3>
                     <div className="prose prose-invert max-w-none">
                       {subtitles ? (
-                        <pre className="text-slate-300 leading-relaxed whitespace-pre-wrap text-sm bg-slate-900/50 p-4 rounded-lg overflow-auto max-h-[600px]">
+                        <pre className="leading-relaxed whitespace-pre-wrap text-sm bg-slate-900/50 p-4 rounded-lg overflow-auto max-h-[600px]" style={{ color: 'var(--text-secondary)', lineHeight: '1.7' }}>
                           {subtitles}
                         </pre>
                       ) : (
-                        <p className="text-slate-400 leading-relaxed">
+                        <p className="leading-relaxed" style={{ color: 'var(--text-muted)', lineHeight: '1.7' }}>
                           載入中... 該影片暫無字幕資料
                         </p>
                       )}
@@ -807,11 +857,22 @@ function HomePage() {
                           className="rounded-lg p-4"
                           style={{
                             backgroundColor: 'var(--bg-secondary)',
-                            border: '1px solid var(--border-subtle)'
+                            border: '1px solid var(--border-subtle)',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+                            e.currentTarget.style.borderColor = 'var(--accent-color)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'none';
+                            e.currentTarget.style.borderColor = 'var(--border-subtle)';
                           }}
                         >
                           <div className="flex justify-between items-start mb-2">
-                            <h4 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+                            <h4 className="text-lg font-semibold" style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: '600' }}>
                               {vocab.word}
                             </h4>
                             <span
@@ -827,7 +888,7 @@ function HomePage() {
                                vocab.level === 'intermediate' ? '中級' : '高級'}
                             </span>
                           </div>
-                          <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
+                          <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.6' }}>
                             {vocab.part_of_speech} • {vocab.definition_zh}
                           </p>
                           <div
@@ -842,9 +903,9 @@ function HomePage() {
                             </p>
                           </div>
                           <div className="space-y-1">
-                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>例句：</p>
+                            <p className="text-xs" style={{ color: 'var(--text-muted)', fontSize: '13px' }}>例句：</p>
                             {vocab.example_sentences.map((example, idx) => (
-                              <p key={idx} className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                              <p key={idx} className="text-sm" style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.7' }}>
                                 • {example}
                               </p>
                             ))}
@@ -860,10 +921,10 @@ function HomePage() {
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
                 <div className="text-6xl mb-4">🎬</div>
-                <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+                <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: '700' }}>
                   歡迎來到 SubtitleLingo
                 </h3>
-                <p className="text-slate-400" style={{ color: 'var(--text-secondary)' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '16px', lineHeight: '1.7' }}>
                   從左側選擇一部影片，開始您的英文學習之旅
                 </p>
               </div>

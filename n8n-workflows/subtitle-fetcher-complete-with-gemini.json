@@ -31,7 +31,16 @@
         "method": "GET",
         "url": "=https://api.opensubtitles.com/api/v1/subtitles?imdb_id={{ $json.clean_imdb_id }}&languages={{ $json.language }}",
         "authentication": "none",
-        "options": {}
+        "options": {
+          "headers": {
+            "headerParameters": [
+              {
+                "name": "Api-Key",
+                "value": "vSuOAURoDGadtGk6End40nf6Eah0bVOF"
+              }
+            ]
+          }
+        }
       },
       "id": "http-search",
       "name": "HTTP Request - Search",
@@ -58,7 +67,16 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ { file_id: $json.file_id } }}",
-        "options": {}
+        "options": {
+          "headers": {
+            "headerParameters": [
+              {
+                "name": "Api-Key",
+                "value": "vSuOAURoDGadtGk6End40nf6Eah0bVOF"
+              }
+            ]
+          }
+        }
       },
       "id": "http-download",
       "name": "HTTP Request - Download",
