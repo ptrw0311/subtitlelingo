@@ -119,9 +119,16 @@ export const remove = async (table, id) => {
 
 // 影片相關的資料庫操作
 export const movieDB = {
-  // 取得所有影片
+  // 取得所有影片（依下載次數排序）
   getAll: async (limit = 50) => {
-    return await select('movies', {}, '*', limit);
+    const sql = `SELECT * FROM movies ORDER BY download_count DESC LIMIT ${limit}`;
+    try {
+      const result = await db.execute(sql);
+      return { data: formatQueryResult(result), error: null };
+    } catch (error) {
+      console.error('Turso 查詢錯誤:', error);
+      return { data: null, error };
+    }
   },
 
   // 根據 IMDb ID 取得影片

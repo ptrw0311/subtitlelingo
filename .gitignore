@@ -42,3 +42,8 @@ response.txt
 
 # MCP related
 .playwright-mcp/
+
+# Scripts with API keys (local use only)
+scripts/fetch-*.js
+scripts/reanalyze-*.js
+scripts/update-*.js

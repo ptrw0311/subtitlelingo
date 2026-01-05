@@ -607,7 +607,18 @@ function HomePage() {
                       {movie.type === 'movie' ? '🎬' : '📺'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium truncate" style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: '600' }}>{movie.title}</h3>
+                      <h3 className="font-medium truncate" style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: '600' }}>
+                        {movie.title}
+                        {movie.overview && movie.overview.includes('Season') && (
+                          <span className="ml-2 text-xs px-2 py-0.5 rounded" style={{
+                            backgroundColor: 'var(--accent-color)',
+                            color: 'var(--bg-primary)',
+                            fontWeight: '500'
+                          }}>
+                            {movie.overview.match(/Season (\d+), Episode (\d+)/)?.slice(1).map((n, i) => i === 0 ? `S${n.padStart(2, '0')}` : `E${n.padStart(2, '0')}`).join('') || ''}
+                          </span>
+                        )}
+                      </h3>
                       <p className="text-sm" style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{movie.year}</p>
                     </div>
                   </div>
@@ -788,12 +799,9 @@ function HomePage() {
                               border: '1px solid var(--border-subtle)'
                             }}
                           >
-                            <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-start mb-2">
                               <span className="text-sm font-mono" style={{ color: 'var(--accent-color)' }}>
                                 {dialogue.timeStart} - {dialogue.timeEnd}
-                              </span>
-                              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                #{dialogue.sequence}
                               </span>
                             </div>
                             <p className="text-lg mb-2 italic" style={{ color: 'var(--text-primary)' }}>
