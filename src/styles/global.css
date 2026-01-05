@@ -198,6 +198,17 @@ select:focus {
   margin: 0 auto;
 }
 
+/* 標籤按鈕區域 - 固定在頂部 */
+.tab-buttons-sticky {
+  position: sticky;
+  top: 0;
+  background: var(--bg-primary);
+  padding: 1rem 0;
+  z-index: 50;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
 /* 卡片樣式 */
 .card {
   background: rgba(30, 41, 59, 0.7);  /* 更新為新背景色 */

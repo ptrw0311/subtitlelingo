@@ -499,44 +499,47 @@ function HomePage() {
       {/* 側邊欄 */}
       <aside className="sidebar">
         <div className="p-4 flex flex-col" style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
-          <h1
-            className="font-bold mb-4 text-center"
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '24px',      /* 從 18px 提升 */
-              lineHeight: '1.3',
-              letterSpacing: '-0.02em',
-              wordWrap: 'break-word',
-              overflowWrap: 'break-word'
-            }}
-          >
-            🎞️ <span className="bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">
-              SubtitleLingo
-            </span>
-          </h1>
+          {/* 凍結的頂部區域 */}
+          <div style={{ position: 'sticky', top: 0, backgroundColor: 'var(--bg-primary)', zIndex: 10, paddingBottom: '1rem' }}>
+            <h1
+              className="font-bold mb-4 text-center"
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '24px',
+                lineHeight: '1.3',
+                letterSpacing: '-0.02em',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word'
+              }}
+            >
+              🎞️ <span className="bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">
+                SubtitleLingo
+              </span>
+            </h1>
 
-          {/* 作者資訊 - 移至標題下方 */}
-          <div className="mb-6 text-center">
-            <p className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)', fontSize: '13px' }}>
-              ✍️ produced by Peter Wang
-            </p>
-          </div>
+            {/* 作者資訊 - 移至標題下方 */}
+            <div className="mb-6 text-center">
+              <p className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)', fontSize: '13px' }}>
+                ✍️ produced by Peter Wang
+              </p>
+            </div>
 
-          {/* 搜尋框 */}
-          <div className="mb-6">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="🔍 搜尋影片..."
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all duration-200"
-                style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-subtle)' }}
-              />
+            {/* 搜尋框 */}
+            <div className="mb-6">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="🔍 搜尋影片..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all duration-200"
+                  style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-subtle)' }}
+                />
+              </div>
             </div>
           </div>
 
-          {/* 影片列表 */}
+          {/* 影片列表 - 可滾動 */}
           <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '60px' }}>
             <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-display)' }}>
               熱門影片
@@ -699,7 +702,7 @@ function HomePage() {
           {selectedMovie ? (
             <>
               {/* 內容標籤 */}
-              <div className="flex space-x-2 mb-6">
+              <div className="flex space-x-2 mb-6 tab-buttons-sticky">
                 <button
                   onClick={() => setActiveTab('subtitle')}
                   className="px-4 py-2 rounded-lg font-medium transition-all"
