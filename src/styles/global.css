@@ -151,7 +151,8 @@ select:focus {
   margin-left: var(--sidebar-width);
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   background: var(--bg-primary);
   overflow-y: auto;
 }
