@@ -4,6 +4,7 @@ import './utils/dbTest.js'; // 測試 Turso 連線
 import HomePage from './pages/HomePage';
 import PracticePage from './pages/PracticePage';
 import StatsPage from './pages/StatsPage';
+import QuizPage from './pages/QuizPage';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/practice/:movieId" element={<PracticePage />} />
           <Route path="/stats" element={<StatsPage />} />
+          <Route path="/quiz" element={<QuizPage />} />
         </Routes>
       </div>
     </Router>

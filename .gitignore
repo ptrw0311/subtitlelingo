@@ -30,6 +30,8 @@ dist-ssr
 
 # Claude Code settings
 .claude/settings.local.json
+# 但保留 .claude/settings.json (可分享的設定)
+!.claude/settings.json
 
 # Backup files
 *.backup
@@ -42,6 +44,9 @@ response.txt
 
 # MCP related
 .playwright-mcp/
+
+# Claude skills (we want to track the skills directory)
+!.claude/skills/
 
 # Scripts with API keys (local use only)
 scripts/fetch-*.js

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { movieDB, vocabularyDB, subtitleDB, importantDialoguesDB } from '../config/turso.js';
 
 // 備用假資料
@@ -205,6 +205,7 @@ const inceptionVocabularies = [
 ];
 
 function HomePage() {
+  const navigate = useNavigate();
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('subtitle');
@@ -765,6 +766,26 @@ function HomePage() {
                   }}
                 >
                   📚 生字筆記
+                </button>
+                <button
+                  onClick={() => navigate('/quiz')}
+                  className="px-4 py-2 rounded-lg font-medium transition-all"
+                  style={{
+                    backgroundColor: 'var(--accent-primary)',
+                    color: 'var(--text-primary)',
+                    transition: 'all 0.2s ease',
+                    fontWeight: '600'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  🎯 開始測驗
                 </button>
               </div>
 
