@@ -1,0 +1,65 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment files (contains sensitive data)
+.env
+.env.local
+.env.*.local
+
+# Claude Code settings
+.claude/settings.local.json
+# 但保留 .claude/settings.json (可分享的設定)
+!.claude/settings.json
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Temporary files
+nul
+response.txt
+
+# MCP related
+.playwright-mcp/
+
+# Claude skills (we want to track the skills directory)
+!.claude/skills/
+
+# Scripts with API keys (local use only)
+scripts/fetch-*.js
+scripts/reanalyze-*.js
+scripts/update-*.js
+scripts/check-opensubtitles-quota.js
+scripts/migrate-*.js
+scripts/process-*.js
+scripts/add-*.js
+scripts/test-*.js
+scripts/seed-*.js
+scripts/simple-test.js
+scripts/check-*.js
+
+# MCP server with API keys
+n8n-mcp-server.js
