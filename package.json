@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist -m 'Deploy to GitHub Pages'"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
