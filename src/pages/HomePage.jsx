@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { movieDB, vocabularyDB, subtitleDB, importantDialoguesDB } from '../config/turso.js';
+import MovieSelector from '../components/MovieSelector';
+import AllMoviesDropdown from '../components/AllMoviesDropdown';
+import LearningButtons from '../components/LearningButtons';
 
 // 備用假資料
 const fallbackMovies = [
@@ -345,6 +348,15 @@ function HomePage() {
     }
   };
 
+  // 處理電影選擇
+  const handleMovieSelect = (movieId) => {
+    const movie = movies.find(m => m.id === movieId);
+    if (movie) {
+      setSelectedMovie(movie);
+      console.log(`🎬 已選擇影片：${movie.title}`);
+    }
+  };
+
   // 簡單的翻譯映射（Inception 電影中的關鍵對話）
   const translations = {
     "You mustn't be afraid to dream a little bigger, darling.": "親愛的，你不該害怕夢想得更宏大一點。",
@@ -497,146 +509,28 @@ function HomePage() {
 
   return (
     <div className="app-container">
-      {/* 側邊欄 */}
-      <aside className="sidebar">
-        <div className="p-4 flex flex-col" style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
-          {/* 凍結的頂部區域 */}
-          <div style={{ position: 'sticky', top: 0, backgroundColor: 'var(--bg-primary)', zIndex: 10, paddingBottom: '1rem' }}>
-            <h1
-              className="font-bold mb-4 text-center"
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: '24px',
-                lineHeight: '1.3',
-                letterSpacing: '-0.02em',
-                wordWrap: 'break-word',
-                overflowWrap: 'break-word'
-              }}
-            >
-              🎞️ <span className="bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">
-                SubtitleLingo
-              </span>
-            </h1>
-
-            {/* 作者資訊 - 移至標題下方 */}
-            <div className="mb-6 text-center">
-              <p className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)', fontSize: '13px' }}>
-                ✍️ produced by Peter Wang
-              </p>
-            </div>
-
-            {/* 搜尋框 */}
-            <div className="mb-6">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="🔍 搜尋影片..."
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all duration-200"
-                  style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-subtle)' }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 影片列表 - 可滾動 */}
-          <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '60px' }}>
-            <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-display)' }}>
-              熱門影片
-              {loading && <span className="text-xs text-slate-500 ml-2">載入中...</span>}
-            </h2>
-
-            {/* 錯誤提示 */}
-            {error && (
-              <div className="mb-4 p-3 bg-red-600/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
-                ⚠️ {error}
-              </div>
-            )}
-
-            {/* 載入狀態 */}
-            {loading && (
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="p-3 rounded-lg bg-slate-800/30 animate-pulse">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-6 h-6 bg-slate-700 rounded"></div>
-                      <div className="flex-1">
-                        <div className="h-4 bg-slate-700 rounded w-3/4 mb-2"></div>
-                        <div className="h-3 bg-slate-700 rounded w-1/4"></div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* 影片列表 */}
-            {!loading && (
-              <div className="space-y-3">
-                {filteredMovies.length === 0 ? (
-                  <div className="text-center py-8 text-slate-400">
-                    <div className="text-4xl mb-2">🔍</div>
-                    <p>找不到符合的影片</p>
-                  </div>
-                ) : (
-                  filteredMovies.map((movie) => (
-                <div
-                  key={movie.id}
-                  onClick={() => setSelectedMovie(movie)}
-                  className={`p-3 rounded-lg cursor-pointer transition-all`}
-                  style={{
-                    backgroundColor: selectedMovie?.id === movie.id ? 'rgba(220, 38, 38, 0.2)' : 'var(--bg-secondary)',
-                    borderColor: selectedMovie?.id === movie.id ? 'rgba(239, 68, 68, 0.5)' : 'transparent',
-                    border: selectedMovie?.id === movie.id ? '1px solid' : '1px solid var(--border-subtle)',
-                    marginBottom: '0.75rem'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (selectedMovie?.id !== movie.id) {
-                      e.currentTarget.style.transform = 'translateX(4px)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.2)';
-                      e.currentTarget.style.borderColor = 'var(--accent-color)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedMovie?.id !== movie.id) {
-                      e.currentTarget.style.transform = 'translateX(0)';
-                      e.currentTarget.style.boxShadow = 'none';
-                      e.currentTarget.style.borderColor = 'transparent';
-                    }
-                  }}
-                >
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0">
-                      {movie.type === 'movie' ? '🎬' : '📺'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium truncate" style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: '600' }}>
-                        {movie.title}
-                        {movie.overview && movie.overview.includes('Season') && (
-                          <span className="ml-2 text-xs px-2 py-0.5 rounded" style={{
-                            backgroundColor: 'var(--accent-color)',
-                            color: 'var(--bg-primary)',
-                            fontWeight: '500'
-                          }}>
-                            {movie.overview.match(/Season (\d+), Episode (\d+)/)?.slice(1).map((n, i) => i === 0 ? `S${n.padStart(2, '0')}` : `E${n.padStart(2, '0')}`).join('') || ''}
-                          </span>
-                        )}
-                      </h3>
-                      <p className="text-sm" style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{movie.year}</p>
-                    </div>
-                  </div>
-                </div>
-              ))
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </aside>
-
       {/* 主要內容區 */}
       <main className="main-content">
+        {/* 標題和作者資訊 */}
+        <div className="p-6 text-center" style={{ backgroundColor: 'var(--bg-primary)', borderBottom: '1px solid var(--border-subtle)' }}>
+          <h1
+            className="font-bold mb-2"
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '32px',
+              lineHeight: '1.3',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            🎞️ <span className="bg-gradient-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">
+              SubtitleLingo
+            </span>
+          </h1>
+          <p className="text-sm" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)', fontSize: '14px' }}>
+            ✍️ produced by Peter Wang
+          </p>
+        </div>
+
         <div className="page-header">
           <div className="flex justify-between items-center">
             <div>
@@ -698,6 +592,23 @@ function HomePage() {
             )}
           </div>
         </div>
+
+        {/* 電影選擇區塊 */}
+        <MovieSelector
+          currentMovieId={selectedMovie ? selectedMovie.id : null}
+          onMovieSelect={handleMovieSelect}
+        />
+
+        {/* 所有電影下拉選單 */}
+        <AllMoviesDropdown
+          currentMovieId={selectedMovie ? selectedMovie.id : null}
+          onMovieSelect={handleMovieSelect}
+        />
+
+        {/* 學習按鈕區塊 */}
+        {selectedMovie && (
+          <LearningButtons selectedMovie={selectedMovie} />
+        )}
 
         <div className="content-area">
           {selectedMovie ? (

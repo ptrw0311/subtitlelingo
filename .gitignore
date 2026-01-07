@@ -52,3 +52,14 @@ response.txt
 scripts/fetch-*.js
 scripts/reanalyze-*.js
 scripts/update-*.js
+scripts/check-opensubtitles-quota.js
+scripts/migrate-*.js
+scripts/process-*.js
+scripts/add-*.js
+scripts/test-*.js
+scripts/seed-*.js
+scripts/simple-test.js
+scripts/check-*.js
+
+# MCP server with API keys
+n8n-mcp-server.js
