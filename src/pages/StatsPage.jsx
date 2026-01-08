@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { learningDB, vocabularyDB, movieDB } from '../config/turso';
+import { learningDB, vocabularyDB, movieDB } from '../config/turso-api';
 
 // 備用統計資料（當資料庫沒有資料時使用）
 const fallbackStats = {
@@ -275,8 +275,19 @@ function StatsPage() {
 
       <main className="main-content">
         <div className="page-header">
-          <h1 className="page-title">學習統計</h1>
-          <p className="page-subtitle">追蹤您的學習進度和成果</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <Link
+                to="/"
+                className="inline-flex items-center gap-2 px-4 py-2 mb-4 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors duration-200"
+              >
+                <span>←</span>
+                <span>回到首頁</span>
+              </Link>
+              <h1 className="page-title">學習統計</h1>
+              <p className="page-subtitle">追蹤您的學習進度和成果</p>
+            </div>
+          </div>
         </div>
 
         <div className="content-area">

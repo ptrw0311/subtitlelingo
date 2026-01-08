@@ -6,9 +6,12 @@ import PracticePage from './pages/PracticePage';
 import StatsPage from './pages/StatsPage';
 import QuizPage from './pages/QuizPage';
 
+// Vercel 和本地開發都使用根路徑（無 basename）
+const basename = '';
+
 function App() {
   return (
-    <Router basename="/subtitlelingo">
+    <Router basename={basename}>
       <div className="App">
         <Routes>
           <Route path="/" element={<HomePage />} />

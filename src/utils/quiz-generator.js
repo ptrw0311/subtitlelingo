@@ -7,7 +7,7 @@
  * - Type C: 給例句，選單字意思
  */
 
-import { vocabularyDB } from '../config/turso.js';
+import { vocabularyDB } from '../config/turso-api.js';
 
 /**
  * 隨機打亂陣列（Fisher-Yates shuffle）

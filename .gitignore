@@ -63,3 +63,7 @@ scripts/check-*.js
 
 # MCP server with API keys
 n8n-mcp-server.js
+
+# Vercel
+.vercel/
+.vercel

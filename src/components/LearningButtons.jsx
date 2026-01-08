@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { vocabularyDB, importantDialoguesDB } from '../config/turso';
+import { vocabularyDB, importantDialoguesDB } from '../config/turso-api';
 
 const USER_ID = 'demo_user';
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { exerciseDB, movieDB } from '../config/turso';
+import { exerciseDB, movieDB } from '../config/turso-api';
 
 // 備用練習題資料（當資料庫沒有資料時使用）
 const fallbackQuestions = [

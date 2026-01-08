@@ -1,0 +1,30 @@
+# Vercel 部署配置
+# 部署整個應用（前端 + API）
+
+# 忽略不必要的文件
+node_modules
+.git
+.github
+.vscode
+.claude
+scripts
+cloudflare-worker
+
+# 忽略測試和文檔
+*.md
+.DS_Store
+*.backup
+*.bak
+test_*.py
+*.png
+
+# 保留所有必要的文件
+!api
+!dist
+!src
+!public
+!index.html
+!package.json
+!package-lock.json
+!vercel.json
+!vite.config.js

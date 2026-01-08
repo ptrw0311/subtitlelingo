@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { movieDB, vocabularyDB } from '../config/turso.js';
+import { movieDB, vocabularyDB } from '../config/turso-api';
 
 export default function AllMoviesDropdown({ currentMovieId, onMovieSelect }) {
   const [isOpen, setIsOpen] = useState(false);

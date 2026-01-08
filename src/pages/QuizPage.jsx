@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { movieDB, quizDB, masteryDB, wrongAnswersDB, analyticsDB } from '../config/turso.js';
+import { movieDB, quizDB, masteryDB, wrongAnswersDB, analyticsDB } from '../config/turso-api';
 import { generateMultipleChoiceQuestions, calculateScore } from '../utils/quiz-generator.js';
 import { getMasteryLabel } from '../utils/mastery-calculator.js';
 

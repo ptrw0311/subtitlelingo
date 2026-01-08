@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { movieDB, vocabularyDB } from '../config/turso.js';
+import { movieDB, vocabularyDB } from '../config/turso-api';
 
 const USER_ID = 'demo_user';
 
@@ -98,19 +98,18 @@ export default function RecentMoviesCard({ currentMovieId, onMovieSelect }) {
               onClick={() => onMovieSelect(movie.id)}
               className="movie-card flex-shrink-0 w-40 rounded-lg p-2 border-2 cursor-pointer transition-all duration-300 relative overflow-hidden group"
               style={{
-                background: isSelected
-                  ? gradient
-                  : 'linear-gradient(135deg, rgba(51, 65, 85, 0.6) 0%, rgba(30, 41, 59, 0.9) 100%)',
+                background: gradient,
                 border: isSelected ? '2px solid rgba(255, 255, 255, 0.4)' : '2px solid transparent',
                 boxShadow: isSelected
                   ? '0 8px 20px rgba(0, 0, 0, 0.4)'
-                  : '0 2px 8px rgba(0, 0, 0, 0.2)',
+                  : '0 4px 12px rgba(0, 0, 0, 0.3)',
                 transform: 'translateY(0)',
+                opacity: isSelected ? 1 : 0.85,
               }}
               onMouseEnter={(e) => {
                 if (!isSelected) {
                   e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-                  e.currentTarget.style.background = gradient;
+                  e.currentTarget.style.opacity = '1';
                   e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
                   e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.4)';
                 }
@@ -118,9 +117,9 @@ export default function RecentMoviesCard({ currentMovieId, onMovieSelect }) {
               onMouseLeave={(e) => {
                 if (!isSelected) {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(51, 65, 85, 0.6) 0%, rgba(30, 41, 59, 0.9) 100%)';
+                  e.currentTarget.style.opacity = '0.85';
                   e.currentTarget.style.borderColor = 'transparent';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
                 }
               }}
             >

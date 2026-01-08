@@ -1,8 +1,8 @@
-import { testConnection, movieDB } from '../config/turso.js';
+import { testConnection, movieDB } from '../config/turso-api.js';
 
 // 測試資料庫連線和基本操作
 export const runDBTest = async () => {
-  console.log('🔍 測試 Turso 資料庫連線...');
+  console.log('🔍 測試 Vercel API + Turso 資料庫連線...');
 
   // 測試基本連線
   const isConnected = await testConnection();
@@ -19,7 +19,7 @@ export const runDBTest = async () => {
       return false;
     }
 
-    console.log('✅ 資料庫連線成功！');
+    console.log('✅ API 與資料庫連線成功！');
     console.log('📊 目前影片數量:', movies?.length || 0);
 
     return true;

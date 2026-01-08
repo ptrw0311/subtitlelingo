@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { movieDB, vocabularyDB, subtitleDB, importantDialoguesDB } from '../config/turso.js';
+import { movieDB, vocabularyDB, subtitleDB, importantDialoguesDB } from '../config/turso-api';
 import MovieSelector from '../components/MovieSelector';
 import AllMoviesDropdown from '../components/AllMoviesDropdown';
 import LearningButtons from '../components/LearningButtons';
