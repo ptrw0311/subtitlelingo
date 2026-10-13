@@ -11,9 +11,10 @@ class TursoAPI {
     this.baseURL = baseURL;
   }
 
-  async query(sql, params = []) {
+  // 送出具名查詢；SQL 只存在伺服器端白名單（api/_queries.js）
+  async query(name, params = []) {
     try {
-      console.log('📤 Sending query:', sql);
+      console.log('📤 Sending query:', name);
 
       // 如果 baseURL 為空，使用相對路徑（同域名下的 /api/query）
       // 否則使用完整 URL
@@ -24,7 +25,7 @@ class TursoAPI {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ sql, params }),
+        body: JSON.stringify({ name, params }),
       });
 
       console.log('📥 Response status:', response.status);
@@ -53,7 +54,7 @@ class TursoAPI {
   // 測試連接
   async testConnection() {
     try {
-      const result = await this.query('SELECT COUNT(*) as count FROM movies');
+      const result = await this.query('movies.count');
       console.log('✅ API 連接成功，影片數量:', result.data[0]?.count || 0);
       return true;
     } catch (error) {
@@ -65,29 +66,17 @@ class TursoAPI {
   // 影片相關操作
   movieDB = {
     getAll: async (limit = 50) => {
-      const sql = `SELECT * FROM movies ORDER BY download_count DESC LIMIT ${limit}`;
-      const result = await this.query(sql);
+      const result = await this.query('movies.getAll', [limit]);
       return { data: this.formatResult(result), error: null };
     },
 
     getByImdbId: async (imdbId) => {
-      const sql = 'SELECT * FROM movies WHERE imdb_id = ?';
-      const result = await this.query(sql, [imdbId]);
+      const result = await this.query('movies.getByImdbId', [imdbId]);
       return { data: this.formatResult(result), error: null };
     },
 
     search: async (query, limit = 20) => {
-      const sql = `SELECT * FROM movies WHERE title LIKE ? ORDER BY download_count DESC LIMIT ?`;
-      const result = await this.query(sql, [`%${query}%`, limit]);
-      return { data: this.formatResult(result), error: null };
-    },
-
-    create: async (movieData) => {
-      const columns = Object.keys(movieData).join(', ');
-      const placeholders = Object.keys(movieData).map(() => '?').join(', ');
-      const values = Object.values(movieData);
-      const sql = `INSERT INTO movies (${columns}) VALUES (${placeholders}) RETURNING *`;
-      const result = await this.query(sql, values);
+      const result = await this.query('movies.search', [`%${query}%`, limit]);
       return { data: this.formatResult(result), error: null };
     },
   };
@@ -95,17 +84,7 @@ class TursoAPI {
   // 字幕相關操作
   subtitleDB = {
     getByMovieId: async (movieId) => {
-      const sql = 'SELECT * FROM subtitles WHERE movie_id = ?';
-      const result = await this.query(sql, [movieId]);
-      return { data: this.formatResult(result), error: null };
-    },
-
-    create: async (subtitleData) => {
-      const columns = Object.keys(subtitleData).join(', ');
-      const placeholders = Object.keys(subtitleData).map(() => '?').join(', ');
-      const values = Object.values(subtitleData);
-      const sql = `INSERT INTO subtitles (${columns}) VALUES (${placeholders}) RETURNING *`;
-      const result = await this.query(sql, values);
+      const result = await this.query('subtitles.getByMovieId', [movieId]);
       return { data: this.formatResult(result), error: null };
     },
   };
@@ -113,62 +92,22 @@ class TursoAPI {
   // 生字筆記相關操作
   vocabularyDB = {
     getAll: async (level = null) => {
-      let sql = 'SELECT * FROM vocabulary_notes';
-      let params = [];
-      if (level) {
-        sql += ' WHERE level = ?';
-        params = [level];
-      }
-      const result = await this.query(sql, params);
+      const result = level
+        ? await this.query('vocabulary.getByLevel', [level])
+        : await this.query('vocabulary.getAll');
       return { data: this.formatResult(result), error: null };
     },
 
     getByMovieId: async (movieId) => {
-      const sql = 'SELECT * FROM vocabulary_notes WHERE movie_id = ?';
-      const result = await this.query(sql, [movieId]);
-      return { data: this.formatResult(result), error: null };
-    },
-
-    create: async (vocabData) => {
-      const dataToInsert = { ...vocabData };
-      if (dataToInsert.example_sentences && Array.isArray(dataToInsert.example_sentences)) {
-        dataToInsert.example_sentences = JSON.stringify(dataToInsert.example_sentences);
-      }
-      const columns = Object.keys(dataToInsert).join(', ');
-      const placeholders = Object.keys(dataToInsert).map(() => '?').join(', ');
-      const values = Object.values(dataToInsert);
-      const sql = `INSERT INTO vocabulary_notes (${columns}) VALUES (${placeholders}) RETURNING *`;
-      const result = await this.query(sql, values);
+      const result = await this.query('vocabulary.getByMovieId', [movieId]);
       return { data: this.formatResult(result), error: null };
     },
   };
 
   // 重要對話相關操作
   importantDialoguesDB = {
-    getBySubtitleId: async (subtitleId) => {
-      const sql = 'SELECT * FROM important_dialogues WHERE subtitle_id = ?';
-      const result = await this.query(sql, [subtitleId]);
-      return { data: this.formatResult(result), error: null };
-    },
-
     getByMovieId: async (movieId) => {
-      const sql = `
-        SELECT id.*
-        FROM important_dialogues id
-        JOIN subtitles s ON id.subtitle_id = s.id
-        WHERE s.movie_id = ?
-        ORDER BY id.time_start ASC
-      `;
-      const result = await this.query(sql, [movieId]);
-      return { data: this.formatResult(result), error: null };
-    },
-
-    create: async (dialogueData) => {
-      const columns = Object.keys(dialogueData).join(', ');
-      const placeholders = Object.keys(dialogueData).map(() => '?').join(', ');
-      const values = Object.values(dialogueData);
-      const sql = `INSERT INTO important_dialogues (${columns}) VALUES (${placeholders}) RETURNING *`;
-      const result = await this.query(sql, values);
+      const result = await this.query('importantDialogues.getByMovieId', [movieId]);
       return { data: this.formatResult(result), error: null };
     },
   };
@@ -176,61 +115,15 @@ class TursoAPI {
   // 練習題相關操作
   exerciseDB = {
     getByMovieId: async (movieId) => {
-      const sql = 'SELECT * FROM practice_exercises WHERE movie_id = ?';
-      const result = await this.query(sql, [movieId]);
+      const result = await this.query('exercises.getByMovieId', [movieId]);
       return { data: this.formatResult(result), error: null };
     },
-
-    create: async (exerciseData) => {
-      const dataToInsert = { ...exerciseData };
-      if (dataToInsert.options && Array.isArray(dataToInsert.options)) {
-        dataToInsert.options = JSON.stringify(dataToInsert.options);
-      }
-      const columns = Object.keys(dataToInsert).join(', ');
-      const placeholders = Object.keys(dataToInsert).map(() => '?').join(', ');
-      const values = Object.values(dataToInsert);
-      const sql = `INSERT INTO practice_exercises (${columns}) VALUES (${placeholders}) RETURNING *`;
-      const result = await this.query(sql, values);
-      return { data: this.formatResult(result), error: null };
-    },
-
-    getRandom: async (movieId, count = 5) => {
-      const sql = `SELECT * FROM practice_exercises WHERE movie_id = ? ORDER BY RANDOM() LIMIT ?`;
-      const result = await this.query(sql, [movieId, count]);
-      return { data: this.formatResult(result), error: null };
-    }
   };
 
   // 用戶學習記錄相關操作
   learningDB = {
-    recordSession: async (userId, movieId, sessionData) => {
-      const dataToInsert = {
-        user_id: userId,
-        movie_id: movieId,
-        ...sessionData
-      };
-      const columns = Object.keys(dataToInsert).join(', ');
-      const placeholders = Object.keys(dataToInsert).map(() => '?').join(', ');
-      const values = Object.values(dataToInsert);
-      const sql = `INSERT INTO user_learning_records (${columns}) VALUES (${placeholders}) RETURNING *`;
-      const result = await this.query(sql, values);
-      return { data: this.formatResult(result), error: null };
-    },
-
     getStats: async (userId, days = 7) => {
-      const sql = `
-        SELECT
-          study_date,
-          SUM(study_minutes) as total_minutes,
-          SUM(words_learned) as total_words,
-          SUM(exercises_completed) as total_exercises,
-          SUM(exercises_correct) as correct_exercises
-        FROM user_learning_records
-        WHERE user_id = ? AND study_date >= date('now', '-${days} days')
-        GROUP BY study_date
-        ORDER BY study_date DESC
-      `;
-      const result = await this.query(sql, [userId]);
+      const result = await this.query('learning.getStats', [userId, days]);
       return { data: this.formatResult(result), error: null };
     }
   };
@@ -238,99 +131,40 @@ class TursoAPI {
   // 測驗系統相關操作
   quizDB = {
     createSession: async (userId, quizConfig) => {
-      const data = {
-        user_id: userId,
-        quiz_type: quizConfig.quizType || 'multiple_choice',
-        total_questions: quizConfig.totalQuestions || 10,
-        movie_id: quizConfig.movieId || null,
-        time_limit: quizConfig.timeLimit || null,
-      };
-      const columns = Object.keys(data).join(', ');
-      const placeholders = Object.keys(data).map(() => '?').join(', ');
-      const values = Object.values(data);
-      const sql = `INSERT INTO quiz_sessions (${columns}) VALUES (${placeholders}) RETURNING *`;
-      const result = await this.query(sql, values);
+      const result = await this.query('quiz.createSession', [
+        userId,
+        quizConfig.quizType || 'multiple_choice',
+        quizConfig.totalQuestions || 10,
+        quizConfig.movieId || null,
+        quizConfig.timeLimit || null,
+      ]);
       return { data: this.formatResult(result), error: null };
     },
 
     recordAnswer: async (sessionId, answerData) => {
-      const data = {
-        session_id: sessionId,
-        vocabulary_id: answerData.vocabularyId,
-        question_type: answerData.questionType,
-        question_text: answerData.questionText,
-        user_answer: answerData.userAnswer,
-        correct_answer: answerData.correctAnswer,
-        is_correct: answerData.isCorrect ? 1 : 0,
-        time_spent: answerData.timeSpent || null,
-      };
-      const columns = Object.keys(data).join(', ');
-      const placeholders = Object.keys(data).map(() => '?').join(', ');
-      const values = Object.values(data);
-      const sql = `INSERT INTO quiz_answers (${columns}) VALUES (${placeholders}) RETURNING *`;
-      const result = await this.query(sql, values);
+      const result = await this.query('quiz.recordAnswer', [
+        sessionId,
+        answerData.vocabularyId,
+        answerData.questionType,
+        answerData.questionText,
+        answerData.userAnswer,
+        answerData.correctAnswer,
+        answerData.isCorrect ? 1 : 0,
+        answerData.timeSpent || null,
+      ]);
       return { data: this.formatResult(result), error: null };
     },
 
     completeSession: async (sessionId, results) => {
-      const sql = `
-        UPDATE quiz_sessions
-        SET correct_answers = ?, time_spent = ?, completed_at = datetime('now')
-        WHERE id = ?
-        RETURNING *
-      `;
-      const result = await this.query(sql, [results.correctAnswers, results.timeSpent, sessionId]);
+      const result = await this.query('quiz.completeSession', [results.correctAnswers, results.timeSpent, sessionId]);
       return { data: this.formatResult(result), error: null };
     },
-
-    getUserHistory: async (userId, limit = 20) => {
-      const sql = `
-        SELECT qs.*, COUNT(qa.id) as answered_questions
-        FROM quiz_sessions qs
-        LEFT JOIN quiz_answers qa ON qs.id = qa.session_id
-        WHERE qs.user_id = ? AND qs.completed_at IS NOT NULL
-        GROUP BY qs.id
-        ORDER BY qs.created_at DESC
-        LIMIT ?
-      `;
-      const result = await this.query(sql, [userId, limit]);
-      return { data: this.formatResult(result), error: null };
-    },
-
-    getSessionDetails: async (sessionId) => {
-      const sql = `
-        SELECT qs.*, json_group_array(
-          json_object(
-            'id', qa.id,
-            'vocabulary_id', qa.vocabulary_id,
-            'question_type', qa.question_type,
-            'question_text', qa.question_text,
-            'user_answer', qa.user_answer,
-            'correct_answer', qa.correct_answer,
-            'is_correct', qa.is_correct,
-            'time_spent', qa.time_spent,
-            'answered_at', qa.answered_at
-          )
-        ) as answers
-        FROM quiz_sessions qs
-        LEFT JOIN quiz_answers qa ON qs.id = qa.session_id
-        WHERE qs.id = ?
-        GROUP BY qs.id
-      `;
-      const result = await this.query(sql, [sessionId]);
-      const data = this.formatResult(result);
-      if (data && data.length > 0) {
-        data[0].answers = JSON.parse(data[0].answers || '[]');
-      }
-      return { data, error: null };
-    }
   };
 
   // 掌握度相關的資料庫操作
   masteryDB = {
     updateMastery: async (userId, vocabularyId, isCorrect) => {
-      const checkSql = 'SELECT * FROM vocabulary_mastery WHERE user_id = ? AND vocabulary_id = ?';
-      const checkResult = await this.query(checkSql, [userId, vocabularyId]);
+      const checkResult = await this.query('mastery.find', [userId, vocabularyId]);
       const existing = this.formatResult(checkResult);
 
       if (existing && existing.length > 0) {
@@ -340,33 +174,20 @@ class TursoAPI {
         const total = correctCount + incorrectCount;
         const masteryLevel = total === 0 ? 0 : (correctCount * 1.5) / (correctCount * 1.5 + incorrectCount * 0.5);
 
-        const updateSql = `
-          UPDATE vocabulary_mastery
-          SET correct_count = ?, incorrect_count = ?, mastery_level = ?,
-              last_reviewed_at = datetime('now'), updated_at = datetime('now')
-          WHERE user_id = ? AND vocabulary_id = ?
-        `;
-        await this.query(updateSql, [correctCount, incorrectCount, masteryLevel, userId, vocabularyId]);
+        await this.query('mastery.update', [correctCount, incorrectCount, masteryLevel, userId, vocabularyId]);
         return { data: { updated: true }, error: null };
       } else {
         const correctCount = isCorrect ? 1 : 0;
         const incorrectCount = isCorrect ? 0 : 1;
         const masteryLevel = isCorrect ? (1 * 1.5) / (1 * 1.5 + 0 * 0.5) : 0;
 
-        const insertSql = `
-          INSERT INTO vocabulary_mastery
-          (user_id, vocabulary_id, mastery_level, correct_count, incorrect_count, last_reviewed_at, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))
-          RETURNING *
-        `;
-        const result = await this.query(insertSql, [userId, vocabularyId, masteryLevel, correctCount, incorrectCount]);
+        const result = await this.query('mastery.insert', [userId, vocabularyId, masteryLevel, correctCount, incorrectCount]);
         return { data: { created: true, ...this.formatResult(result)[0] }, error: null };
       }
     },
 
     updateLeitnerBox: async (userId, vocabularyId, isCorrect) => {
-      const checkSql = 'SELECT srs_box FROM vocabulary_mastery WHERE user_id = ? AND vocabulary_id = ?';
-      const checkResult = await this.query(checkSql, [userId, vocabularyId]);
+      const checkResult = await this.query('mastery.getSrsBox', [userId, vocabularyId]);
       const existing = this.formatResult(checkResult);
 
       let currentBox = 0;
@@ -380,17 +201,7 @@ class TursoAPI {
       const nextReviewDate = new Date();
       nextReviewDate.setDate(nextReviewDate.getDate() + intervalDays);
 
-      const upsertSql = `
-        INSERT INTO vocabulary_mastery (user_id, vocabulary_id, srs_box, srs_interval, next_review_date, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-        ON CONFLICT(user_id, vocabulary_id) DO UPDATE SET
-          srs_box = excluded.srs_box,
-          srs_interval = excluded.srs_interval,
-          next_review_date = excluded.next_review_date,
-          updated_at = datetime('now')
-        RETURNING *
-      `;
-      const result = await this.query(upsertSql, [userId, vocabularyId, newBox, intervalDays, nextReviewDate.toISOString()]);
+      await this.query('mastery.upsertLeitner', [userId, vocabularyId, newBox, intervalDays, nextReviewDate.toISOString()]);
 
       return {
         data: {
@@ -401,36 +212,6 @@ class TursoAPI {
         error: null
       };
     },
-
-    getMasteryLevel: async (userId, vocabularyId) => {
-      const sql = 'SELECT * FROM vocabulary_mastery WHERE user_id = ? AND vocabulary_id = ?';
-      const result = await this.query(sql, [userId, vocabularyId]);
-      return { data: this.formatResult(result), error: null };
-    },
-
-    getDueReviews: async (userId) => {
-      const sql = `
-        SELECT vm.*, vn.word, vn.meaning, vn.level, vn.movie_id
-        FROM vocabulary_mastery vm
-        JOIN vocabulary_notes vn ON vm.vocabulary_id = vn.id
-        WHERE vm.user_id = ? AND date(vm.next_review_date) <= date('now')
-        ORDER BY vm.next_review_date ASC
-      `;
-      const result = await this.query(sql, [userId]);
-      return { data: this.formatResult(result), error: null };
-    },
-
-    getAllMasteries: async (userId) => {
-      const sql = `
-        SELECT vm.*, vn.word, vn.meaning, vn.level
-        FROM vocabulary_mastery vm
-        JOIN vocabulary_notes vn ON vm.vocabulary_id = vn.id
-        WHERE vm.user_id = ?
-        ORDER BY vm.mastery_level DESC
-      `;
-      const result = await this.query(sql, [userId]);
-      return { data: this.formatResult(result), error: null };
-    }
   };
 
   // 錯題本相關的資料庫操作
@@ -444,26 +225,12 @@ class TursoAPI {
         questionContext = null
       } = wrongAnswerData;
 
-      const checkSql = `
-        SELECT * FROM wrong_answers_book
-        WHERE user_id = ? AND vocabulary_id = ? AND mastered = FALSE
-      `;
-      const checkResult = await this.query(checkSql, [userId, vocabularyId]);
+      const checkResult = await this.query('wrongAnswers.findOpen', [userId, vocabularyId]);
       const existing = this.formatResult(checkResult);
 
       if (existing && existing.length > 0) {
         const record = existing[0];
-        const updateSql = `
-          UPDATE wrong_answers_book
-          SET times_wrong = times_wrong + 1,
-              wrong_answer = ?,
-              question_type = ?,
-              question_context = ?,
-              last_attempted_at = datetime('now')
-          WHERE id = ?
-          RETURNING *
-        `;
-        const result = await this.query(updateSql, [
+        const result = await this.query('wrongAnswers.update', [
           wrongAnswer,
           questionType,
           questionContext,
@@ -471,13 +238,7 @@ class TursoAPI {
         ]);
         return { data: { updated: true, id: record.id, ...this.formatResult(result)[0] }, error: null };
       } else {
-        const insertSql = `
-          INSERT INTO wrong_answers_book
-          (user_id, vocabulary_id, wrong_answer, correct_answer, question_type, question_context, created_at, last_attempted_at)
-          VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-          RETURNING *
-        `;
-        const result = await this.query(insertSql, [
+        const result = await this.query('wrongAnswers.insert', [
           userId,
           vocabularyId,
           wrongAnswer,
@@ -488,140 +249,12 @@ class TursoAPI {
         return { data: { created: true, ...this.formatResult(result)[0] }, error: null };
       }
     },
-
-    getWrongAnswers: async (userId, options = {}) => {
-      const { movieId = null, level = null, mastered = false, limit = 50 } = options;
-
-      let sql = `
-        SELECT wab.*, vn.word, vn.meaning, vn.level, vn.movie_id, vn.example_sentences
-        FROM wrong_answers_book wab
-        JOIN vocabulary_notes vn ON wab.vocabulary_id = vn.id
-        WHERE wab.user_id = ? AND wab.mastered = ?
-      `;
-      const params = [userId, mastered ? 1 : 0];
-
-      if (movieId) {
-        sql += ' AND vn.movie_id = ?';
-        params.push(movieId);
-      }
-
-      if (level) {
-        sql += ' AND vn.level = ?';
-        params.push(level);
-      }
-
-      sql += ' ORDER BY wab.times_wrong DESC, wab.created_at DESC LIMIT ?';
-      params.push(limit);
-
-      const result = await this.query(sql, params);
-      return { data: this.formatResult(result), error: null };
-    },
-
-    markAsMastered: async (userId, wrongAnswerId) => {
-      const sql = `
-        UPDATE wrong_answers_book
-        SET mastered = TRUE, last_attempted_at = datetime('now')
-        WHERE id = ? AND user_id = ?
-      `;
-      await this.query(sql, [wrongAnswerId, userId]);
-      return { data: { marked: true }, error: null };
-    },
-
-    getWeaknessAnalysis: async (userId) => {
-      const sql = `
-        SELECT
-          vn.id as vocabulary_id,
-          vn.word,
-          vn.meaning,
-          vn.level,
-          vn.movie_id,
-          COUNT(wab.id) as total_wrong,
-          MAX(wab.times_wrong) as max_times_wrong
-        FROM wrong_answers_book wab
-        JOIN vocabulary_notes vn ON wab.vocabulary_id = vn.id
-        WHERE wab.user_id = ? AND wab.mastered = FALSE
-        GROUP BY vn.id
-        ORDER BY total_wrong DESC, max_times_wrong DESC
-        LIMIT 20
-      `;
-      const result = await this.query(sql, [userId]);
-      return { data: this.formatResult(result), error: null };
-    }
   };
 
   // 學習統計分析相關操作
   analyticsDB = {
-    getOverallStats: async (userId) => {
-      const sql = `
-        SELECT
-          (SELECT COUNT(*) FROM vocabulary_notes) as total_vocabulary,
-          (SELECT COUNT(DISTINCT vm.vocabulary_id)
-           FROM vocabulary_mastery vm
-           WHERE vm.user_id = ? AND vm.mastery_level >= 0.8) as mastered_count,
-          (SELECT COUNT(*) FROM quiz_sessions WHERE user_id = ?) as total_quizzes,
-          (SELECT AVG(CAST(correct_answers AS REAL) / CAST(total_questions AS REAL)) * 100
-           FROM quiz_sessions
-           WHERE user_id = ? AND completed_at IS NOT NULL) as avg_score,
-          (SELECT current_streak FROM learning_streaks WHERE user_id = ?) as current_streak
-      `;
-      const result = await this.query(sql, [userId, userId, userId, userId]);
-      const data = this.formatResult(result);
-      if (data && data.length > 0) {
-        return { data: data[0], error: null };
-      }
-      return { data: null, error: null };
-    },
-
-    getQuizHistory: async (userId, limit = 10) => {
-      const sql = `
-        SELECT
-          id,
-          quiz_type,
-          total_questions,
-          correct_answers,
-          ROUND((CAST(correct_answers AS REAL) / total_questions) * 100, 1) as score_percentage,
-          time_spent,
-          completed_at,
-          created_at
-        FROM quiz_sessions
-        WHERE user_id = ? AND completed_at IS NOT NULL
-        ORDER BY created_at DESC
-        LIMIT ?
-      `;
-      const result = await this.query(sql, [userId, limit]);
-      return { data: this.formatResult(result), error: null };
-    },
-
-    getMasteryDistribution: async (userId) => {
-      const sql = `
-        SELECT
-          CASE
-            WHEN mastery_level = 0 THEN '尚未學習'
-            WHEN mastery_level < 0.3 THEN '初級'
-            WHEN mastery_level < 0.6 THEN '中級'
-            WHEN mastery_level < 0.8 THEN '高級'
-            ELSE '精通'
-          END as mastery_label,
-          COUNT(*) as count
-        FROM vocabulary_mastery
-        WHERE user_id = ?
-        GROUP BY mastery_label
-        ORDER BY
-          CASE mastery_label
-            WHEN '尚未學習' THEN 1
-            WHEN '初級' THEN 2
-            WHEN '中級' THEN 3
-            WHEN '高級' THEN 4
-            WHEN '精通' THEN 5
-          END
-      `;
-      const result = await this.query(sql, [userId]);
-      return { data: this.formatResult(result), error: null };
-    },
-
     updateStreak: async (userId) => {
-      const checkSql = 'SELECT * FROM learning_streaks WHERE user_id = ?';
-      const checkResult = await this.query(checkSql, [userId]);
+      const checkResult = await this.query('streaks.find', [userId]);
       const existing = this.formatResult(checkResult);
       const today = new Date().toISOString().split('T')[0];
 
@@ -654,17 +287,7 @@ class TursoAPI {
 
         const newLongestStreak = Math.max(record.longest_streak, newCurrentStreak);
 
-        const updateSql = `
-          UPDATE learning_streaks
-          SET current_streak = ?,
-              longest_streak = ?,
-              last_study_date = ?,
-              total_study_days = ?,
-              updated_at = datetime('now')
-          WHERE user_id = ?
-          RETURNING *
-        `;
-        const result = await this.query(updateSql, [
+        await this.query('streaks.update', [
           newCurrentStreak,
           newLongestStreak,
           today,
@@ -682,12 +305,7 @@ class TursoAPI {
           error: null
         };
       } else {
-        const insertSql = `
-          INSERT INTO learning_streaks (user_id, current_streak, longest_streak, last_study_date, total_study_days, created_at, updated_at)
-          VALUES (?, 1, 1, ?, 1, datetime('now'), datetime('now'))
-          RETURNING *
-        `;
-        await this.query(insertSql, [userId, today]);
+        await this.query('streaks.insert', [userId, today]);
 
         return {
           data: {

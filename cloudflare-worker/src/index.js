@@ -1,6 +1,8 @@
 // Cloudflare Worker for Turso Database API Proxy
 // Deploy to: https://dash.cloudflare.com -> Workers & Pages
 
+import { resolveQuery } from '../../api/_queries.js';
+
 export default {
   async fetch(request, env, ctx) {
     // 處理 CORS 預檢請求
@@ -32,10 +34,11 @@ export default {
       // Turso 資料查詢端點
       if (path === '/api/query' && request.method === 'POST') {
         const body = await request.json();
-        const { sql, params = [] } = body;
+        // 只執行白名單內的具名查詢，不接受瀏覽器送來的 SQL
+        const resolved = resolveQuery(body?.name, body?.params ?? []);
 
-        if (!sql) {
-          return new Response(JSON.stringify({ error: 'SQL query is required' }), {
+        if (resolved.error) {
+          return new Response(JSON.stringify({ error: resolved.error }), {
             status: 400,
             headers: {
               'Content-Type': 'application/json',
@@ -52,8 +55,8 @@ export default {
           {
             type: 'execute',
             stmt: {
-              sql: sql,
-              args: params.map((val) => {
+              sql: resolved.sql,
+              args: resolved.params.map((val) => {
                 // 處理不同類型的參數
                 if (val === null) return { type: 'null' };
                 if (typeof val === 'number') {

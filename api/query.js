@@ -1,4 +1,5 @@
 import { createClient } from '@libsql/client';
+import { resolveQuery } from './_queries.js';
 
 export default async function handler(req, res) {
   // CORS 處理
@@ -14,10 +15,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { sql, params = [] } = req.body;
+    // 只執行白名單內的具名查詢，不接受瀏覽器送來的 SQL
+    const { name, params = [] } = req.body || {};
+    const resolved = resolveQuery(name, params);
 
-    if (!sql) {
-      return res.status(400).json({ error: 'SQL query is required' });
+    if (resolved.error) {
+      return res.status(400).json({ error: resolved.error });
     }
 
     // 建立 Turso 客戶端
@@ -28,8 +31,8 @@ export default async function handler(req, res) {
 
     // 執行查詢
     const result = await client.execute({
-      sql: sql,
-      args: params,
+      sql: resolved.sql,
+      args: resolved.params,
     });
 
     // 返回結果
