@@ -6,17 +6,17 @@ Notebook: .agentflow/devlog.md — root.
 
 Current commit: local delivery recorded in Git history.
 
-Tests/scenarios: 正式站 6 頁 Playwright 截圖.
+Tests/scenarios: 計畫文件，無程式變更、未執行測試.
 
 Configuration: ag.json — schema v8; validated for claude this round.
 
-Proven: 已完成功能對照 100LS 的分析與正式站預覽截圖.
+Proven: 100LS 聽說功能實作計畫已寫好，現況描述已對照程式碼.
 
-Open: 等待使用者決定：100LS 聽說功能計畫、/api/query 安全修正的優先順序.
+Open: 等待使用者回答 design.md 第 5 節 Q1–Q6 並同意動工.
 
-Next: 依 A-001 問題的回答決定下一步.
+Next: 依回答從階段 0（安全修正）或階段 1 開始實作.
 
-Artifacts: .agentflow/artifacts/A-001-feature-review/.
+Artifacts: .agentflow/artifacts/A-002-100ls-plan/design.md.
 
 Archived eras: none.
 
@@ -161,5 +161,51 @@ Streams: none.
 ---
 
 # → Ask / A-002 (peter wang)
+
++先幫我做一份「100LS 聽說功能」的實作計畫, 能夠把我現在的開發進度補足，能夠符合「100LS 聽說功能」，等我看過再動工
+
+---
+
+## [RUN-001] Event — 2026-10-13 11:45:14 +0800 (A-002)
+
+- 讀過首頁、學習模式按鈕、字幕載入、/api/query、資料庫建表腳本，確認字幕只有英文、沒有登入、沒有單元測試工具。
+
+- 寫好實作計畫 artifacts/A-002-100ls-plan/design.md，內含 6 個待決定事項；沒有修改任何程式碼。
+
+# ← Reply / A-002
+
+* _2026-10-13 11:45:14 +0800 (claude/unknown)_
+
+## [SUMMARY]
+
+- 計畫已寫好，還沒動工：重點是讓你在網頁中直接播放自己電腦裡的影片檔，逐句聽原聲、重播、放慢、錄音對照、計算跟說次數，同時修好 A-001 發現的四個現況問題；請先回答計畫中的 6 個待決定事項。
+
+## [FINAL REPORT]
+
+1. 「先幫我做一份「100LS 聽說功能」的實作計畫, 能夠把我現在的開發進度補足，能夠符合「100LS 聽說功能」，等我看過再動工」
+
+   - **已完成：** 計畫存在 [100LS 聽說功能實作計畫](artifacts/A-002-100ls-plan/design.md)。依你的要求，這一輪只寫計畫，沒有修改任何程式碼。
+
+   - **核心做法：** 你在網頁中選取自己電腦裡的影片檔，網站依字幕時間點逐句播放。檔案只在你的瀏覽器裡播放，不會上傳，所以沒有散布影片的版權問題，也解決了 A-001 提到的「沒有聲音來源」。
+
+   - **五個步驟都有對應工具：** 步驟 1、2 在網頁中看片並打勾；步驟 3 點字幕裡的字加入生字本；步驟 4 逐句重播、慢速、錄音對照；步驟 5 關字幕跟說並計算「第 N / 100 遍」。對照表見[第 2 節](artifacts/A-002-100ls-plan/design.md#2-現況和計畫的對照)。
+
+   - **補足現況：** 計畫也會安裝缺少的排版工具 Tailwind 來修好版面，讓 6 個學習按鈕真的換頁，統計頁改成顯示真實資料，並讓填空頁不再拿《教父》的題目頂替，見[第 3.5 節](artifacts/A-002-100ls-plan/design.md#35-補足現有的問題)。
+
+   - **不動資料庫：** 進度和生字本都存在瀏覽器裡，不新增資料表，也不新增從瀏覽器寫入資料庫的管道。限制是換電腦時進度不會跟著過去（Q5 有因應方式）。
+
+   - **分階段做：** 安全修正、基礎、五步驟頁、聽說工具、生字本和現況修正，共 5 個階段，每階段完成都能單獨使用，見[第 3.6 節](artifacts/A-002-100ls-plan/design.md#36-實作順序)。
+
+   - **需要你做的事：** 打開計畫的[第 5 節「待決定事項」](artifacts/A-002-100ls-plan/design.md#5-待決定事項)，在 Q1 到 Q6 每題的 `- ans:` 後面填寫答案（寫「照建議」也可以），然後告訴我可以動工。
+
+   - A-001 的第 2 題（`/api/query` 安全修正要不要先做）還沒有回答，我把它併入計畫的 Q1，請在那裡回答。
+
+## Questions (batched — each with a suggested default)
+
+- None.
+
+---
+
+# → Ask / A-003 (peter wang)
 
 +
