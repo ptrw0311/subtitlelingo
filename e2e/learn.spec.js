@@ -107,7 +107,17 @@ test('AC-9 YouTube 嵌入和 A-B 重複', async ({ page, api }) => {
 
   await page.getByLabel('YouTube 網址').fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
   await page.getByTestId('save-youtube').click();
+  // 播放器還沒載入完成就選 0.75 倍：載入完成後仍要套用（審查 S-1）
+  await page.getByTestId('rate-0.75').click();
   await expect(page.locator('[data-testid="youtube-player"] iframe')).toHaveAttribute('data-video-id', 'dQw4w9WgXcQ');
+  await expect.poll(() => page.evaluate(() => window.__yt.calls.some((c) => c[0] === 'setPlaybackRate' && c[1] === 0.75))).toBe(true);
+
+  // YouTube 片段拿不到字幕時間點：不套用資料庫字幕，逐句「播放」也不跳到電影時間（審查 B-1）
+  await page.evaluate(() => { window.__yt.time = 4; window.__yt.calls = []; });
+  await expect(page.getByTestId('subtitle-overlay')).not.toContainText('resilient parasite');
+  await expect(page.getByTestId('subtitle-overlay')).toContainText('CC');
+  await page.getByTestId('line').nth(1).getByTestId('play-line').click();
+  expect(await page.evaluate(() => window.__yt.calls.filter((c) => c[0] === 'seekTo'))).toEqual([]);
 
   // 在 1:05 按 A、1:12 按 B
   await page.evaluate(() => { window.__yt.time = 65; });
@@ -121,9 +131,6 @@ test('AC-9 YouTube 嵌入和 A-B 重複', async ({ page, api }) => {
   await expect.poll(() => page.evaluate(() => window.__yt.time)).toBe(65);
   await page.evaluate(() => { window.__yt.calls = []; window.__yt.time = 72.2; });
   await expect.poll(() => page.evaluate(() => window.__yt.calls.filter((c) => c[0] === 'seekTo').map((c) => c[1]))).toContain(65);
-
-  await page.getByTestId('rate-0.75').click();
-  await expect.poll(() => page.evaluate(() => window.__yt.calls.some((c) => c[0] === 'setPlaybackRate' && c[1] === 0.75))).toBe(true);
 
   // 重新整理後網址和段落仍在
   await page.reload();

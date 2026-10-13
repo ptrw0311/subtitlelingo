@@ -31,9 +31,19 @@ const YT_ERRORS = {
   150: '這部影片不允許嵌入，請改用其他片段或本機影片檔。',
 };
 
+// YouTube 字幕模組不是正式文件化的介面，失敗時讓使用者自己按播放器的 CC 按鈕
+function applyCaptions(target, on) {
+  try {
+    if (on) target.loadModule?.('captions');
+    else target.unloadModule?.('captions');
+  } catch { /* 忽略 */ }
+}
+
 const YouTubePlayer = forwardRef(function YouTubePlayer({ videoId, onError }, ref) {
   const holder = useRef(null);
   const player = useRef(null);
+  // 真實播放器載入完成（onReady）前呼叫的設定會被略過，先記下來，載入完成再套用
+  const settings = useRef({ rate: 1, captions: null });
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +57,13 @@ const YouTubePlayer = forwardRef(function YouTubePlayer({ videoId, onError }, re
         width: '100%',
         height: '100%',
         playerVars: { playsinline: 1, rel: 0 },
-        events: { onError: (e) => onError?.(YT_ERRORS[e.data] || `YouTube 播放器發生錯誤（代碼 ${e.data}）。`) },
+        events: {
+          onReady: (e) => {
+            e.target.setPlaybackRate?.(settings.current.rate);
+            if (settings.current.captions !== null) applyCaptions(e.target, settings.current.captions);
+          },
+          onError: (e) => onError?.(YT_ERRORS[e.data] || `YouTube 播放器發生錯誤（代碼 ${e.data}）。`),
+        },
       });
     });
 
@@ -63,14 +79,14 @@ const YouTubePlayer = forwardRef(function YouTubePlayer({ videoId, onError }, re
     seek: (t) => player.current?.seekTo?.(t, true),
     play: () => player.current?.playVideo?.(),
     pause: () => player.current?.pauseVideo?.(),
-    setRate: (r) => player.current?.setPlaybackRate?.(r),
+    setRate: (r) => {
+      settings.current.rate = r;
+      player.current?.setPlaybackRate?.(r);
+    },
     getTime: () => player.current?.getCurrentTime?.() ?? 0,
-    // YouTube 字幕模組不是正式文件化的介面，失敗時讓使用者自己按播放器的 CC 按鈕
     setCaptions: (on) => {
-      try {
-        if (on) player.current?.loadModule?.('captions');
-        else player.current?.unloadModule?.('captions');
-      } catch { /* 忽略 */ }
+      settings.current.captions = on;
+      if (player.current) applyCaptions(player.current, on);
     },
   }), []);
 

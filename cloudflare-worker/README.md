@@ -44,12 +44,12 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787
 
 ### POST /api/query
 
-執行 SQL 查詢
+執行具名查詢。只接受 `api/_queries.js` 白名單內的查詢名稱，不接受任意 SQL；名稱不存在或參數數量、型別不符時回傳 400。
 
 **請求：**
 ```json
 {
-  "sql": "SELECT * FROM movies LIMIT ?",
+  "name": "movies.getAll",
   "params": [10]
 }
 ```

@@ -49,11 +49,14 @@ window.YT = { Player: class {
     f.dataset.videoId = opts.videoId;
     el.replaceWith(f);
     Object.assign(window.__yt, { opts, player: this });
+    // 和真實播放器一樣：建立後要等 onReady 才能操作（測試審查 S-1）
+    this.ready = false;
+    setTimeout(() => { this.ready = true; opts.events?.onReady?.({ target: this }); }, 300);
   }
   seekTo(t) { window.__yt.calls.push(['seekTo', t]); window.__yt.time = t; }
   playVideo() { window.__yt.calls.push(['playVideo']); }
   pauseVideo() { window.__yt.calls.push(['pauseVideo']); }
-  setPlaybackRate(r) { window.__yt.calls.push(['setPlaybackRate', r]); }
+  setPlaybackRate(r) { if (this.ready) window.__yt.calls.push(['setPlaybackRate', r]); }
   getCurrentTime() { return window.__yt.time; }
   loadModule(m) { window.__yt.calls.push(['loadModule', m]); }
   unloadModule(m) { window.__yt.calls.push(['unloadModule', m]); }

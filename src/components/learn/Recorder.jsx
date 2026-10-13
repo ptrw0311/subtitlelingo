@@ -6,13 +6,17 @@ export default function Recorder({ onPlayOriginal }) {
   const [audioUrl, setAudioUrl] = useState('');
   const recorder = useRef(null);
   const chunks = useRef([]);
+  const micStream = useRef(null);
 
   // 換新錄音或離開頁面時，釋放舊錄音
   useEffect(() => () => { if (audioUrl) URL.revokeObjectURL(audioUrl); }, [audioUrl]);
+  // 錄音中離開頁面時，關閉麥克風
+  useEffect(() => () => micStream.current?.getTracks().forEach((t) => t.stop()), []);
 
   const start = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStream.current = stream;
       chunks.current = [];
       const rec = new MediaRecorder(stream);
       rec.ondataavailable = (e) => { if (e.data.size) chunks.current.push(e.data); };

@@ -91,8 +91,10 @@ export default function LearnPage() {
   useEffect(() => { player.current?.setCaptions(step === 3 || step === 4); }, [step, source]);
 
   const offset = movie.subtitleOffset || 0;
-  const currentIndex = findLineAt(lines, time, offset);
-  const zhIndex = findLineAt(zhLines, time, offset);
+  // 字幕檔的時間點只對得上本機影片；YouTube 片段改用播放器內建字幕和 A-B 重複（設計 3.2）
+  const timedSubtitles = source?.type === 'local';
+  const currentIndex = timedSubtitles ? findLineAt(lines, time, offset) : -1;
+  const zhIndex = timedSubtitles ? findLineAt(zhLines, time, offset) : -1;
   const savedWords = useMemo(
     () => new Set(state.vocab.filter((v) => v.movieId === movieId).map((v) => v.word)),
     [state.vocab, movieId],
@@ -119,7 +121,7 @@ export default function LearnPage() {
   };
 
   const playLine = (line) => {
-    if (!source) return speak(line.text);
+    if (!timedSubtitles) return speak(line.text);
     return playRange(line.start + offset, line.end + offset, { loop: false, lineIndex: line.index });
   };
 
@@ -255,6 +257,9 @@ export default function LearnPage() {
                   ? <ClickableText text={lines[currentIndex].text} onWord={onWord} savedWords={savedWords} />
                   : lines[currentIndex].text)}
                 {(step === 1 || step === 5) && <span className="text-sm text-slate-500">（這一步不顯示字幕）</span>}
+                {!timedSubtitles && step >= 2 && step <= 4 && (
+                  <span className="text-sm text-slate-400">YouTube 片段請用播放器右下角的 CC 按鈕開關字幕；逐句「播放」會改用電腦朗讀，練原聲請用 A-B 重複。</span>
+                )}
               </div>
             </>
           ) : (
@@ -276,7 +281,7 @@ export default function LearnPage() {
                 {r} 倍
               </button>
             ))}
-            {lines.length > 0 && (
+            {timedSubtitles && lines.length > 0 && (
               <>
                 <span className="ml-4">字幕時間微調 {offset > 0 ? '+' : ''}{offset.toFixed(1)} 秒</span>
                 <button type="button" className="!px-2 !py-1" onClick={() => updateThisMovie((m) => ({ ...m, subtitleOffset: +((m.subtitleOffset || 0) - 0.5).toFixed(1) }))}>字幕提早 0.5 秒</button>
