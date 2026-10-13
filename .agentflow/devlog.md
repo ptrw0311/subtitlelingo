@@ -6,17 +6,17 @@ Notebook: .agentflow/devlog.md — root.
 
 Current commit: local delivery recorded in Git history.
 
-Tests/scenarios: 計畫文件更新，無程式變更、未執行測試.
+Tests/scenarios: npm test 58/58；Playwright 14/14（假資料、假 YouTube 播放器）；npm run build 成功.
 
 Configuration: ag.json — schema v8; validated for claude this round.
 
-Proven: design.md Q1–Q6 已全部照建議定案.
+Proven: 100LS 計畫階段 0–4 完成並通過第 2 次獨立審查.
 
-Open: 等待使用者確認開始實作.
+Open: 尚未推送與部署；真實 YouTube、麥克風、正式資料庫待部署後驗收.
 
-Next: 確認後從階段 0 安全修正開始.
+Next: 等待使用者決定推送部署與驗收.
 
-Artifacts: .agentflow/artifacts/A-002-100ls-plan/design.md.
+Artifacts: .agentflow/artifacts/A-006-100ls-impl/tracker.md, .agentflow/artifacts/A-006-100ls-impl/review-2.md.
 
 Archived eras: none.
 
@@ -422,5 +422,129 @@ Streams: none.
 ---
 
 # → Ask / A-006 (peter wang)
+
++ 開始實作
+
+---
+
+## [RUN-001] Event — 2026-10-13 14:45:11 +0800 (A-006)
+
+- 階段 0–3 完成並各自提交：9513b40（具名查詢白名單）、8e32a91（拆句、進度保存、Tailwind）、0915747（學習頁、YouTube、A-B、逐句、錄音）。
+
+- 驗證：npm test 60/60、Playwright 6/6（API 以假資料攔截，未連正式資料庫）、build 與新檔 lint 通過。
+
+- 範圍比對：實際變更檔案與 [tracker](artifacts/A-006-100ls-impl/tracker.md) T-1～T-4 預期相符；另新增唯讀查詢 movies.getById 供學習頁取片名。
+
+## [WIP-001] Checkpoint — 2026-10-13 14:45:12 +0800 (A-006)
+
+- **Finished:** 階段 0–3（T-1～T-4）。
+
+- **Running now:** 無背景程序。
+
+- **Still to do:** T-5 首頁 6 個按鈕、統計頁真實資料、填空頁無題目提示、整體版面；最終審查與交付。
+
+- **Next work action:** 閱讀 LearningButtons、StatsPage、PracticePage 並撰寫失敗測試。
+
+- **Checks:** [x] tracker.md | [x] devlog RUN | [x] scope matches tracker
+
+## [RUN-002] Event — 2026-10-13 15:21:09 +0800 (A-006)
+
+- 階段 4 完成並提交 1f8b5aa：首頁 6 個按鈕可換頁、統計頁改用真實進度、填空頁無題目提示、版面與測驗頁按鈕顏色修正。
+
+## [RUN-003] Event — 2026-10-13 15:21:09 +0800 (A-006)
+
+- 第 1 次獨立審查 BLOCKING：YouTube 來源仍套用資料庫整部電影的字幕時間（B-1）；71ea423 修正，並處理 S-1（播放器就緒後套用速度）、S-3（離開頁面關閉麥克風）、Worker README。
+
+## [RUN-004] Event — 2026-10-13 15:21:09 +0800 (A-006)
+
+- 第 2 次獨立審查 PASS（review-2.md）；npm test 58/58、Playwright 14/14、build 成功。
+
+# ← Reply / A-006
+
+* _2026-10-13 15:21:09 +0800 (claude/unknown)_
+
+## [SUMMARY]
+
+- 計畫的五個階段都已完成並提交到本機，獨立審查第 2 次通過；**還沒推送、也還沒部署**，正式站目前仍是舊版。下一步請決定是否推送到 GitHub 讓 Vercel 部署，部署後再用真實 YouTube 片段和麥克風試一次。
+
+## [FINAL REPORT]
+
+1. 「開始實作」
+
+   - **結果：成功完成，尚未部署。** 依[實作計畫](artifacts/A-002-100ls-plan/design.md)做完階段 0～4，每個階段各提交一次，另有一次審查後的修正提交。進度紀錄在 [tracker](artifacts/A-006-100ls-impl/tracker.md)。
+
+   - **做好的功能：**
+
+     - **安全修正（階段 0）：** 網站後端不再執行瀏覽器送來的任意 SQL，改成只接受事先列好的查詢名稱（白名單在 `api/_queries.js`）。測驗頁原本會寫入資料庫的功能照常運作。
+
+     - **五步驟學習頁 `/learn/影片編號`：** 上方是五步驟進度條，可直接點任何一步；每步有說明和「完成這一步」按鈕。進度存在瀏覽器裡，重新整理或隔天再開都還在，也能匯出／匯入進度檔換電腦用。
+
+     - **兩種影片來源：** 貼 YouTube 網址嵌入播放（不下載影片），或選自己電腦裡的影片檔（不上傳）。
+
+     - **聽和說的工具：** A-B 重複（按 A、按 B 就反覆播這一段，可存成段落清單）、逐句播放（播到句尾自動停）、0.5～1.25 倍速、錄音對照（不存檔）、每句和每段的「跟上了」與「N / 100」次數、步驟 5 的「第 N / 100 遍」。
+
+     - **步驟 3 生字本：** 點英文字幕裡的字，就連同原句加入「我的生字本」。
+
+     - **補足現有問題：** 首頁 6 個學習模式按鈕都會換頁；統計頁改用你真實的學習進度，沒資料就顯示「尚無資料」；填空頁沒題目時顯示「這部片還沒有題目」；頁面不再縮在一側。
+
+   - **YouTube 來源的限制：** YouTube 片段的時間和資料庫裡整部電影的字幕對不上，所以用 YouTube 時字幕請按播放器的 CC 按鈕，練原聲請用 A-B 重複；逐句清單的「播放」會改用電腦朗讀。這是第 1 次審查抓到的問題，已修正。
+
+   - **和原本判斷不同的地方：** 測驗頁按鈕沒有顏色，真正原因是程式用了兩個沒定義的顏色變數，不是 Tailwind；已補上。
+
+   - **驗證結果：**
+
+     - 自動測試 58 項全部通過；瀏覽器操作測試 14 項全部通過，涵蓋驗收項目 AC-1～AC-9；`npm run build` 成功。
+
+     - 瀏覽器測試用假資料代替資料庫、用假的 YouTube 播放器和自製的無聲音檔，**沒有連線正式資料庫**，也沒有對資料庫寫入。
+
+     - 程式中沒有新增建立或修改資料表的指令。
+
+     - 我逐一看過修改後的畫面截圖和全部變更檔案，範圍與計畫相符。
+
+   - **獨立審查：** 由另一個子代理唯讀審查。第 1 次判定 BLOCKING（上面的 YouTube 字幕時間問題）；修正後第 2 次三項判定都是 PASS，見[第 2 次審查報告](artifacts/A-006-100ls-impl/review-2.md)。
+
+   - **還沒驗證的部分：**
+
+     - 真實 YouTube 影片、真實麥克風、正式資料庫上的實際載入，都要部署後由你試一次。
+
+     - 本機 `npm run dev` 沒有後端，學習頁在本機讀不到影片資料，要在部署後的網站上試。
+
+     - 如果你另外部署過 `cloudflare-worker`，它也改成只接受查詢名稱，需要自己重新部署一次。
+
+   - **審查提出、這次沒做的建議：**（只記下，未經你同意不會做）
+
+     - 匯入內容壞掉的進度檔時，學習頁和統計頁會持續空白。
+
+     - 字幕很長的電影，逐句清單可能在慢電腦上卡頓。
+
+     - 用 YouTube 時仍可載入中文字幕檔，但不會顯示。
+
+     - 後端錯誤訊息會帶出資料庫錯誤內容；測驗頁的寫入沒有登入保護（原本就是如此）。
+
+     - 首頁左側有一條空白（原本就有）。
+
+## Questions (batched — each with a suggested default)
+
+1. 要把這次的提交推送到 GitHub 嗎？推送後 Vercel 會自動部署，正式站就會換成新版。
+
+   - Suggested default: 要，推送 main 分支，部署完成後回報網址。
+
+   - ans:
+
+2. 部署後，請用一支真實的 YouTube 動畫片段和麥克風試學習頁，結果可以接受嗎？
+
+   - Suggested default: 試過沒問題就回「驗收通過」；有問題直接描述畫面與操作步驟。
+
+   - ans:
+
+3. 上面「審查提出、這次沒做的建議」要另開一輪處理嗎？
+
+   - Suggested default: 驗收通過後再開一輪，優先處理壞進度檔造成頁面空白和錯誤訊息外洩。
+
+   - ans:
+
+---
+
+# → Ask / A-007 (peter wang)
 
 +
