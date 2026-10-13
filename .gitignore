@@ -1,3 +1,5 @@
+.codex/
+.worktrees/
 # Logs
 logs
 *.log
