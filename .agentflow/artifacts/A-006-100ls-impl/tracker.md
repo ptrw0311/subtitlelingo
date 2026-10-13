@@ -24,15 +24,15 @@
 
 - **Total:** 5.
 
-- **Completed:** 0.
+- **Completed:** 1.
 
-- **Remaining:** 5.
+- **Remaining:** 4.
 
 ## Accepted task checklist
 
-- [x] **T-1:** 階段 0 安全修正：`api/query.js` 與 `cloudflare-worker/src/index.js` 改為只接受具名查詢（`{ name, params }`），SQL 白名單集中在 `api/_queries.js`，只收錄前端實際使用的查詢（含測驗頁既有寫入）；`src/config/turso-api.js` 改送查詢名稱並移除未使用、無白名單的 `create` 類方法。證明：Vitest 測試任意 SQL 與未知名稱被拒、已知名稱以參數執行；`npm run build` 成功。不改資料庫結構、不新增寫入。Source: A-006（design.md Q1、AC-7）。
+- [x] **T-1:** 階段 0 安全修正：`api/query.js` 與 `cloudflare-worker/src/index.js` 改為只接受具名查詢（`{ name, params }`），SQL 白名單集中在 `api/_queries.js`，只收錄前端實際使用的查詢（含測驗頁既有寫入）；`src/config/turso-api.js` 改送查詢名稱並移除未使用、無白名單的 `create` 類方法。證明：Vitest 測試任意 SQL 與未知名稱被拒、已知名稱以參數執行；`npm run build` 成功。不改資料庫結構、不新增寫入。Source: A-006（design.md Q1、AC-7）。 Proof: commit 9513b40；npm test 25/25 通過；npm run build 成功。
 
-- [ ] **T-2:** 階段 1 基礎：安裝 Tailwind 與 Vitest；`src/utils/srt.js` 字幕拆句（首頁共用）；`src/utils/progress-store.js` 進度、次數、生字本、YouTube 網址、A-B 段落存 localStorage，含匯出／匯入。證明：Vitest 測拆句、保存、不同影片互不影響、匯入匯出。Source: A-006（design.md 3.1、3.4、Q3、Q5、AC-1、AC-4）。
+- [x] **T-2:** 階段 1 基礎：安裝 Tailwind 與 Vitest；`src/utils/srt.js` 字幕拆句（首頁共用）；`src/utils/progress-store.js` 進度、次數、生字本、YouTube 網址、A-B 段落存 localStorage，含匯出／匯入。證明：Vitest 測拆句、保存、不同影片互不影響、匯入匯出。Source: A-006（design.md 3.1、3.4、Q3、Q5、AC-1、AC-4）。
 
 - [ ] **T-3:** 階段 2 五步驟學習頁 `/learn/:movieId`：進度條（不強制順序）、每步說明與「完成這一步」、YouTube 嵌入播放器與本機影片播放器（共用操作介面）、步驟 1、2。證明：Playwright 重新整理後進度保留、兩部片互不影響。Source: A-006（design.md 3.2、3.6、Q2、Q4、AC-1）。
 
@@ -46,13 +46,13 @@
 
 ## Current recovery
 
-- **Current item:** T-2.
+- **Current item:** T-3.
 
-- **Last proven result:** T-1：Vitest 25/25 通過（任意 SQL、未知名稱、參數錯誤皆被拒；18 個前端方法皆通過白名單），npm run build 成功。
+- **Last proven result:** T-2：npm test 43/43；build 含 Tailwind utilities。
 
 - **Active blocker or running process:** None.
 
-- **Next safe action:** 安裝 Tailwind，撰寫 srt 與 progress-store 失敗測試。
+- **Next safe action:** 建立 /learn/:movieId 學習頁與兩種播放器。
 
 - **Expected changed files:** api/query.js, api/_queries.js, cloudflare-worker/src/index.js, src/config/turso-api.js, package.json, package-lock.json, tests/.
 
@@ -64,7 +64,7 @@
 
 - **Operation running:** no.
 
-- **Next action remaining:** T-2.
+- **Next action remaining:** T-3.
 
 - **Evidence status:** current.
 

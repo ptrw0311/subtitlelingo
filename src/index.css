@@ -1,3 +1,8 @@
+/* Tailwind：只載入主題變數和樣式工具，不載入 preflight（瀏覽器預設樣式重設），避免改變既有頁面的基本外觀 */
+/* utilities 不放進 CSS layer，才能蓋過下方 button 等元素預設樣式 */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css";
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

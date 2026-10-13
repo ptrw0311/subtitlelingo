@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { movieDB, vocabularyDB, subtitleDB, importantDialoguesDB } from '../config/turso-api';
+import { parseSrt } from '../utils/srt';
 import MovieSelector from '../components/MovieSelector';
 import AllMoviesDropdown from '../components/AllMoviesDropdown';
 import LearningButtons from '../components/LearningButtons';
@@ -381,67 +382,16 @@ function HomePage() {
 
   // 解析 SRT 字幕並提取對話
   const parseDialoguesFromSRT = (srtContent) => {
-    // SRT 格式解析
-    const lines = srtContent.split('\n');
-    const dialogues = [];
-    let currentDialogue = null;
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-
-      // 空行表示一段字幕結束
-      if (!line) {
-        if (currentDialogue && currentDialogue.text) {
-          // 只保留有實際文字內容的對話（過濾掉 [LAUGHING]、[SCREAMS] 等音效描述）
-          const hasSpokenText = currentDialogue.text.match(/[a-zA-Z]{3,}/);
-          if (hasSpokenText) {
-            // 添加翻譯
-            const text = currentDialogue.text.trim();
-            const translation = translations[text] || translateText(text);
-            dialogues.push({ ...currentDialogue, text, translation });
-          }
-        }
-        currentDialogue = null;
-        continue;
-      }
-
-      // 序號行
-      if (/^\d+$/.test(line)) {
-        if (!currentDialogue) {
-          currentDialogue = { sequence: parseInt(line), timeStart: '', timeEnd: '', text: '' };
-        }
-        continue;
-      }
-
-      // 時間軸行 (00:00:00,000 --> 00:00:00,000)
-      if (line.includes('-->')) {
-        if (currentDialogue) {
-          const times = line.split('-->');
-          currentDialogue.timeStart = times[0].trim();
-          currentDialogue.timeEnd = times[1].trim();
-        }
-        continue;
-      }
-
-      // 文字內容行
-      if (currentDialogue && line) {
-        if (currentDialogue.text) {
-          currentDialogue.text += ' ' + line;
-        } else {
-          currentDialogue.text = line;
-        }
-      }
-    }
-
-    // 處理最後一段對話
-    if (currentDialogue && currentDialogue.text) {
-      const hasSpokenText = currentDialogue.text.match(/[a-zA-Z]{3,}/);
-      if (hasSpokenText) {
-        const text = currentDialogue.text.trim();
-        const translation = translations[text] || translateText(text);
-        dialogues.push({ ...currentDialogue, text, translation });
-      }
-    }
+    // 共用 srt.js 拆句；只保留有實際文字內容的對話（過濾掉 [LAUGHING]、[SCREAMS] 等音效描述）
+    const dialogues = parseSrt(srtContent)
+      .filter(line => /[a-zA-Z]{3,}/.test(line.text))
+      .map(({ sequence, timeStart, timeEnd, text }) => ({
+        sequence,
+        timeStart,
+        timeEnd,
+        text,
+        translation: translations[text] || translateText(text),
+      }));
 
     // 選擇前 20 段較長的重要對話
     return dialogues
