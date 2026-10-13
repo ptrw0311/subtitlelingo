@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { vocabularyDB, importantDialoguesDB } from '../config/turso-api';
 
 const USER_ID = 'demo_user';
 
-export default function LearningButtons({ selectedMovie }) {
+// onShowTab：切換首頁下方的「重要對話」「生字筆記」分頁
+export default function LearningButtons({ selectedMovie, onShowTab }) {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     dialoguesCount: 0,
     vocabularyCount: 0,
     masteredCount: 0,
-    reviewCount: 0,
-    streak: 0
+    reviewCount: 0
   });
 
   useEffect(() => {
@@ -42,15 +44,11 @@ export default function LearningButtons({ selectedMovie }) {
           }).length
         : 0;
 
-      // 計算連續學習天數
-      const streak = Math.floor(Math.random() * 30) + 1; // 暫時用隨機值
-
       setStats({
         dialoguesCount,
         vocabularyCount,
         masteredCount,
-        reviewCount,
-        streak
+        reviewCount
       });
     } catch (error) {
       console.error('取得統計資料失敗:', error);
@@ -67,7 +65,7 @@ export default function LearningButtons({ selectedMovie }) {
       title: '觀看字幕',
       description: '完整英文字幕 + 雙語對照',
       gradient: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
-      action: () => console.log('觀看字幕')
+      action: () => navigate(`/learn/${selectedMovie.id}`)
     },
     {
       id: 'dialogue',
@@ -78,9 +76,9 @@ export default function LearningButtons({ selectedMovie }) {
       title: '重要對話',
       description: '精選對話 + 情境學習',
       gradient: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-      badge: stats.dialoguesCount || 12,
+      badge: stats.dialoguesCount || null,
       badgeColor: 'bg-blue-500/30 text-blue-300',
-      action: () => console.log('重要對話')
+      action: () => onShowTab('dialogue')
     },
     {
       id: 'vocabulary',
@@ -96,7 +94,7 @@ export default function LearningButtons({ selectedMovie }) {
         : `${stats.masteredCount}/${stats.vocabularyCount || 0}`,
       badgeText: '已掌握',
       badgeColor: 'bg-purple-500/30 text-purple-300',
-      action: () => console.log('生字筆記')
+      action: () => onShowTab('vocabulary')
     },
     {
       id: 'quiz',
@@ -107,7 +105,7 @@ export default function LearningButtons({ selectedMovie }) {
       title: '開始測驗',
       description: '四選一測驗 + 成績追蹤',
       gradient: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
-      action: () => console.log('開始測驗')
+      action: () => navigate('/quiz')
     },
     {
       id: 'srs',
@@ -118,10 +116,10 @@ export default function LearningButtons({ selectedMovie }) {
       title: '每日複習',
       description: '今日待複習 + Leitner Box',
       gradient: 'linear-gradient(135deg, #db2777 0%, #be185d 100%)',
-      badge: '🔥',
-      badgeText: stats.reviewCount > 0 ? `${stats.reviewCount} 個` : `${stats.streak} 天`,
+      badge: stats.reviewCount > 0 ? '🔥' : null,
+      badgeText: `${stats.reviewCount} 個`,
       badgeColor: 'bg-orange-500/30 text-orange-300',
-      action: () => console.log('每日複習')
+      action: () => navigate('/quiz')
     },
     {
       id: 'speaking',
@@ -130,9 +128,9 @@ export default function LearningButtons({ selectedMovie }) {
       tagText: 'text-green-300',
       icon: '🎤',
       title: '跟讀練習',
-      description: 'Shadowing + 錄音評分',
+      description: 'Shadowing + 錄音對照',
       gradient: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
-      action: () => console.log('跟讀練習')
+      action: () => navigate(`/learn/${selectedMovie.id}?step=4`)
     }
   ];
 

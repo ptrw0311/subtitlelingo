@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { movieDB, subtitleDB } from '../config/turso-api';
 import useProgress from '../hooks/useProgress';
 import { parseSrt, findLineAt } from '../utils/srt';
@@ -21,12 +21,17 @@ const RATES = [0.5, 0.75, 1, 1.25];
 // 100LS 五步驟學習頁
 export default function LearnPage() {
   const { movieId } = useParams();
+  const [searchParams] = useSearchParams();
   const { state, movie, updateThisMovie, updateAll, replaceAll } = useProgress(movieId);
 
   const [info, setInfo] = useState(null);
   const [lines, setLines] = useState([]);
   const [loadError, setLoadError] = useState('');
-  const [step, setStep] = useState(() => recommendedStep(movie) ?? 5);
+  // 網址可帶 ?step=N 直接開某一步（例如首頁的「跟讀練習」），否則開建議的下一步
+  const [step, setStep] = useState(() => {
+    const fromUrl = Number(searchParams.get('step'));
+    return fromUrl >= 1 && fromUrl <= 5 ? fromUrl : recommendedStep(movie) ?? 5;
+  });
 
   // 影片來源：YouTube 網址存在進度裡；本機檔案只在這次開啟期間有效
   const [localFile, setLocalFile] = useState(null);

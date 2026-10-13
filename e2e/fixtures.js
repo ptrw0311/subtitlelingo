@@ -25,7 +25,6 @@ const FIXTURES = {
   'movies.count': () => [{ count: MOVIES.length }],
   'movies.getAll': () => MOVIES,
   'movies.getById': ([id]) => MOVIES.filter((m) => m.id === Number(id)),
-  'movies.getByImdbId': ([imdb]) => MOVIES.filter((m) => m.imdb_id === imdb),
   'movies.search': () => MOVIES,
   'subtitles.getByMovieId': ([id]) => (Number(id) === 1 ? [{ id: 11, movie_id: 1, srt_content: SRT }] : []),
 };

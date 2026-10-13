@@ -557,16 +557,24 @@ function HomePage() {
 
         {/* 學習按鈕區塊 */}
         {selectedMovie && (
-          <LearningButtons selectedMovie={selectedMovie} />
+          <LearningButtons
+            selectedMovie={selectedMovie}
+            onShowTab={(tab) => {
+              setActiveTab(tab);
+              document.getElementById('content-tabs')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          />
         )}
 
-        <div className="content-area">
+        <div className="content-area" id="content-tabs">
           {selectedMovie ? (
             <>
               {/* 內容標籤 */}
               <div className="flex space-x-2 mb-6 tab-buttons-sticky">
                 <button
                   onClick={() => setActiveTab('subtitle')}
+                  data-testid="tab-subtitle"
+                  aria-selected={activeTab === 'subtitle'}
                   className="px-4 py-2 rounded-lg font-medium transition-all"
                   style={{
                     backgroundColor: activeTab === 'subtitle' ? 'var(--primary-color)' : 'var(--bg-tertiary)',
@@ -588,6 +596,8 @@ function HomePage() {
                 </button>
                 <button
                   onClick={() => setActiveTab('dialogue')}
+                  data-testid="tab-dialogue"
+                  aria-selected={activeTab === 'dialogue'}
                   className="px-4 py-2 rounded-lg font-medium transition-all"
                   style={{
                     backgroundColor: activeTab === 'dialogue' ? 'var(--primary-color)' : 'var(--bg-tertiary)',
@@ -609,6 +619,8 @@ function HomePage() {
                 </button>
                 <button
                   onClick={() => setActiveTab('vocabulary')}
+                  data-testid="tab-vocabulary"
+                  aria-selected={activeTab === 'vocabulary'}
                   className="px-4 py-2 rounded-lg font-medium transition-all"
                   style={{
                     backgroundColor: activeTab === 'vocabulary' ? 'var(--primary-color)' : 'var(--bg-tertiary)',

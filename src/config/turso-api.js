@@ -75,11 +75,6 @@ class TursoAPI {
       return { data: this.formatResult(result), error: null };
     },
 
-    getByImdbId: async (imdbId) => {
-      const result = await this.query('movies.getByImdbId', [imdbId]);
-      return { data: this.formatResult(result), error: null };
-    },
-
     search: async (query, limit = 20) => {
       const result = await this.query('movies.search', [`%${query}%`, limit]);
       return { data: this.formatResult(result), error: null };
@@ -123,14 +118,6 @@ class TursoAPI {
       const result = await this.query('exercises.getByMovieId', [movieId]);
       return { data: this.formatResult(result), error: null };
     },
-  };
-
-  // 用戶學習記錄相關操作
-  learningDB = {
-    getStats: async (userId, days = 7) => {
-      const result = await this.query('learning.getStats', [userId, days]);
-      return { data: this.formatResult(result), error: null };
-    }
   };
 
   // 測驗系統相關操作
@@ -336,7 +323,6 @@ export const subtitleDB = db.subtitleDB;
 export const vocabularyDB = db.vocabularyDB;
 export const importantDialoguesDB = db.importantDialoguesDB;
 export const exerciseDB = db.exerciseDB;
-export const learningDB = db.learningDB;
 export const quizDB = db.quizDB;
 export const masteryDB = db.masteryDB;
 export const wrongAnswersDB = db.wrongAnswersDB;

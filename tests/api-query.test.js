@@ -55,7 +55,7 @@ describe('/api/query 只接受具名查詢', () => {
   });
 
   it('參數只能是字串、數字、布林或 null', async () => {
-    const res = await call({ name: 'movies.getByImdbId', params: [{ evil: true }] });
+    const res = await call({ name: 'movies.getById', params: [{ evil: true }] });
     expect(res.statusCode).toBe(400);
     expect(execute).not.toHaveBeenCalled();
   });

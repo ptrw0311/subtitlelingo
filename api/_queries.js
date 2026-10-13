@@ -7,7 +7,6 @@ export const QUERIES = {
   'movies.count': 'SELECT COUNT(*) as count FROM movies',
   'movies.getAll': 'SELECT * FROM movies ORDER BY download_count DESC LIMIT ?',
   'movies.getById': 'SELECT * FROM movies WHERE id = ?',
-  'movies.getByImdbId': 'SELECT * FROM movies WHERE imdb_id = ?',
   'movies.search': 'SELECT * FROM movies WHERE title LIKE ? ORDER BY download_count DESC LIMIT ?',
 
   // 字幕
@@ -28,19 +27,6 @@ export const QUERIES = {
 
   // 練習題
   'exercises.getByMovieId': 'SELECT * FROM practice_exercises WHERE movie_id = ?',
-
-  // 學習紀錄
-  'learning.getStats': `
-    SELECT
-      study_date,
-      SUM(study_minutes) as total_minutes,
-      SUM(words_learned) as total_words,
-      SUM(exercises_completed) as total_exercises,
-      SUM(exercises_correct) as correct_exercises
-    FROM user_learning_records
-    WHERE user_id = ? AND study_date >= date('now', '-' || ? || ' days')
-    GROUP BY study_date
-    ORDER BY study_date DESC`,
 
   // 測驗（測驗頁既有的寫入）
   'quiz.createSession': `

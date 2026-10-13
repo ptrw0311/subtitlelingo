@@ -28,6 +28,10 @@
   --border-glow: rgba(251, 191, 36, 0.4);
   --accent-subtle: rgba(251, 191, 36, 0.1);
 
+  /* 測驗頁使用的變數名稱（原本未定義，按鈕因此沒有顏色） */
+  --accent-primary: var(--primary-color);
+  --border-secondary: var(--bg-tertiary);
+
   /* 狀態色彩 */
   --success-color: #22c55e;
   --error-color: #ef4444;

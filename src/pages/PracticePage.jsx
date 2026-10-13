@@ -2,34 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { exerciseDB, movieDB } from '../config/turso-api';
 
-// 備用練習題資料（當資料庫沒有資料時使用）
-const fallbackQuestions = [
-  {
-    id: 1,
-    question: "I'm going to make him an offer he can't _____.",
-    correctAnswer: "refuse",
-    options: ["refuse", "accept", "ignore", "understand"],
-    explanation: "這句經典台詞的意思是「我要給他一個無法拒絕的提議」。",
-    level: "intermediate"
-  },
-  {
-    id: 2,
-    question: "May the Force be _____ you.",
-    correctAnswer: "with",
-    options: ["with", "on", "in", "for"],
-    explanation: "這是《星際大戰》的經典祝福語，願原力與你同在。",
-    level: "beginner"
-  },
-  {
-    id: 3,
-    question: "Life is like a box of _____. You never know what you're gonna get.",
-    correctAnswer: "chocolates",
-    options: ["chocolates", "candies", "cookies", "surprises"],
-    explanation: "這句話比喻人生的不確定性，就像一盒巧克力，你永遠不知道下一顆是什麼味道。",
-    level: "intermediate"
-  }
-];
-
 function PracticePage() {
   const { movieId } = useParams();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -52,7 +24,7 @@ function PracticePage() {
 
         // 同時載入影片資訊和練習題
         const [movieResult, exerciseResult] = await Promise.all([
-          movieDB.getByImdbId(movieId),
+          movieDB.getById(movieId),
           exerciseDB.getByMovieId(movieId)
         ]);
 
@@ -76,14 +48,13 @@ function PracticePage() {
           }));
           setQuestions(formattedQuestions);
         } else {
-          // 如果沒有找到練習題，使用備用資料
-          console.log('⚠️ 找不到影片練習題，使用備用資料');
-          setQuestions(fallbackQuestions);
+          // 這部片沒有題目：顯示提示，不改用其他電影的範例題
+          setQuestions([]);
         }
       } catch (err) {
         console.error('載入練習題失敗:', err);
-        setError('載入練習題失敗，顯示示範資料');
-        setQuestions(fallbackQuestions);
+        setError('載入練習題失敗，請稍後再試。');
+        setQuestions([]);
       } finally {
         setLoading(false);
       }
@@ -204,6 +175,51 @@ function PracticePage() {
                 >
                   🏠 回到首頁
                 </Link>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // 沒有題目
+  if (questions.length === 0) {
+    return (
+      <div className="app-container">
+        <aside className="sidebar">
+          <div className="p-4">
+            <h1 className="text-2xl font-bold mb-6 text-center">
+              <span className="bg-gradient-to-r from-blue-400 to-amber-400 bg-clip-text text-transparent">
+                SubtitleLingo
+              </span>
+            </h1>
+            <nav className="space-y-2">
+              <Link to="/" className="block px-4 py-2 rounded-lg bg-slate-800 text-white hover:bg-slate-700 transition-colors">
+                🏠 回到首頁
+              </Link>
+            </nav>
+          </div>
+        </aside>
+
+        <main className="main-content">
+          <div className="page-header">
+            <h1 className="page-title">{movie?.title || '填空練習'}</h1>
+          </div>
+          <div className="content-area">
+            <div className="max-w-2xl mx-auto">
+              <div className="card text-center">
+                <div className="text-6xl mb-6">📝</div>
+                <h2 className="text-2xl font-bold text-white mb-4">這部片還沒有題目</h2>
+                <p className="text-slate-300 mb-6">可以先到五步驟學習頁練習聽和說。</p>
+                <div className="flex justify-center gap-3">
+                  <Link to={`/learn/${movieId}`} className="inline-block px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-900 font-medium rounded-lg">
+                    🎬 五步驟學習
+                  </Link>
+                  <Link to="/" className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg">
+                    🏠 回到首頁
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
