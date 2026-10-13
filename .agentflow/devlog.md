@@ -6,15 +6,15 @@ Notebook: .agentflow/devlog.md — root.
 
 Current commit: local delivery recorded in Git history.
 
-Tests/scenarios: 資料查證問答，無程式變更、未執行測試.
+Tests/scenarios: 計畫文件更新，無程式變更、未執行測試.
 
 Configuration: ag.json — schema v8; validated for claude this round.
 
-Proven: 練習素材建議與 YouTube 嵌入可行性已查證.
+Proven: YouTube 嵌入與 A-B 重複已納入實作計畫.
 
-Open: 等待使用者決定是否加入 YouTube 嵌入來源，並回答 design.md Q1–Q6.
+Open: 等待使用者回答 design.md Q1–Q6.
 
-Next: 依回答更新計畫後動工.
+Next: 依回答動工.
 
 Artifacts: .agentflow/artifacts/A-002-100ls-plan/design.md.
 
@@ -314,5 +314,60 @@ Streams: none.
 ---
 
 # → Ask / A-004 (peter wang)
+
++ godev
+   A-003 第 1 題： 要不要把「YouTube 嵌入播放」和「A-B 重複」加進實作計畫，當作和本機影片檔並列的來源？-->要
+
+---
+
+## [RUN-001] Event — 2026-10-13 14:10:09 +0800 (A-004)
+
+- 依 A-003 第 1 題回答「要」，在 design.md 加入 YouTube 嵌入播放和 A-B 重複：第 3.2 節新增兩種來源說明、更新 Q2 建議、INV-1、新增 AC-9。
+
+## [RUN-002] Event — 2026-10-13 14:10:09 +0800 (A-004)
+
+- 重新檢查 design.md：Q1–Q6 的 `- ans:` 仍為空白，維持未動工。
+
+# ← Reply / A-004
+
+* _2026-10-13 14:10:09 +0800 (claude/unknown)_
+
+## [SUMMARY]
+
+- 已把「YouTube 嵌入播放」和「A-B 重複」加進實作計畫，和本機影片檔並列；還沒有動工，因為計畫的 6 個待決定問題（Q1–Q6）仍未回答。
+
+## [FINAL REPORT]
+
+1. 「A-003 第 1 題： 要不要把「YouTube 嵌入播放」和「A-B 重複」加進實作計畫，當作和本機影片檔並列的來源？-->要」
+
+   - **已完成：** 計畫文件 [design.md](artifacts/A-002-100ls-plan/design.md) 已更新，只改計畫，沒有改程式。
+
+   - **新增的內容：**
+
+     - [第 3.2 節](artifacts/A-002-100ls-plan/design.md#32-影片和聲音)：學習頁可切換兩種來源。YouTube 來源是貼上網址、用官方播放器播放，不下載影片；本機影片檔維持原本設計。
+
+     - A-B 重複：按 A 記開始點、按 B 記結束點，就會反覆播放這一段。段落可存成清單、微調前後 0.5 秒，也能標記「跟上了」和計算跟說次數。兩種來源都能用。
+
+     - 有字幕檔時才提供自動逐句切換；YouTube 的字幕用播放器內建的字幕開關。
+
+     - YouTube 網址和段落清單存在瀏覽器裡，不寫入資料庫，仍符合「不改資料庫結構」的原則。
+
+     - 新增驗收項目 AC-9（YouTube 嵌入和 A-B 重複），並把「網站不下載 YouTube 影片」寫進 INV-1。
+
+   - **Q2 的建議答案已改成：** 以 YouTube 嵌入（官方動畫片段）為主、本機影片檔為輔；兩種來源都支援 A-B 重複；有字幕檔時才自動逐句切換。
+
+   - 我重新讀過修改後的文件，確認各節內容一致；Q1–Q6 的答案欄位仍是空白。
+
+## Questions (batched — each with a suggested default)
+
+1. 計畫[第 5 節「待決定事項」](artifacts/A-002-100ls-plan/design.md#5-待決定事項)的 Q1–Q6 還沒有回答，動工前需要你的答案。Q2 的建議已依你這次的決定更新。
+
+   - Suggested default: 在 design.md 逐題填寫 `- ans:`，或直接回覆「全部照建議」。
+
+   - ans:
+
+---
+
+# → Ask / A-005 (peter wang)
 
 +
