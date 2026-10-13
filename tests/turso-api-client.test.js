@@ -18,6 +18,7 @@ describe('前端查詢都在白名單內', () => {
 
   const cases = [
     ['movieDB.getAll', () => api.movieDB.getAll(10)],
+    ['movieDB.getById', () => api.movieDB.getById(1)],
     ['movieDB.getByImdbId', () => api.movieDB.getByImdbId('tt1')],
     ['movieDB.search', () => api.movieDB.search('in')],
     ['subtitleDB.getByMovieId', () => api.subtitleDB.getByMovieId('tt1')],

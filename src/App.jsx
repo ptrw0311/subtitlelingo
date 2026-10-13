@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import PracticePage from './pages/PracticePage';
 import StatsPage from './pages/StatsPage';
 import QuizPage from './pages/QuizPage';
+import LearnPage from './pages/LearnPage';
 
 // Vercel 和本地開發都使用根路徑（無 basename）
 const basename = '';
@@ -18,6 +19,7 @@ function App() {
           <Route path="/practice/:movieId" element={<PracticePage />} />
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/quiz" element={<QuizPage />} />
+          <Route path="/learn/:movieId" element={<LearnPage />} />
         </Routes>
       </div>
     </Router>

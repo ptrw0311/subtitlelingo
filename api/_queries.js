@@ -6,6 +6,7 @@ export const QUERIES = {
   // 影片
   'movies.count': 'SELECT COUNT(*) as count FROM movies',
   'movies.getAll': 'SELECT * FROM movies ORDER BY download_count DESC LIMIT ?',
+  'movies.getById': 'SELECT * FROM movies WHERE id = ?',
   'movies.getByImdbId': 'SELECT * FROM movies WHERE imdb_id = ?',
   'movies.search': 'SELECT * FROM movies WHERE title LIKE ? ORDER BY download_count DESC LIMIT ?',
 

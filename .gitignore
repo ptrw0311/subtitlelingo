@@ -69,3 +69,6 @@ n8n-mcp-server.js
 # Vercel
 .vercel/
 .vercel
+
+# Playwright 測試輸出
+e2e/.results/

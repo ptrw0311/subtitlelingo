@@ -70,6 +70,11 @@ class TursoAPI {
       return { data: this.formatResult(result), error: null };
     },
 
+    getById: async (id) => {
+      const result = await this.query('movies.getById', [id]);
+      return { data: this.formatResult(result), error: null };
+    },
+
     getByImdbId: async (imdbId) => {
       const result = await this.query('movies.getByImdbId', [imdbId]);
       return { data: this.formatResult(result), error: null };
