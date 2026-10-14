@@ -68,7 +68,22 @@
       "mcp__playwright__browser_wait_for",
       "mcp__playwright__browser_evaluate",
       "Bash(powershell:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(git rm:*)",
+      "mcp__playwright__browser_press_key",
+      "mcp__playwright__browser_type",
+      "mcp__brave-search__brave_web_search",
+      "mcp__playwright__browser_run_code",
+      "Bash(git merge:*)",
+      "Bash(npm run deploy:*)",
+      "Bash(find:*)",
+      "Skill(example-skills:webapp-testing)",
+      "Bash(npm run build)",
+      "Bash(grep:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(git fetch:*)",
+      "Bash(vercel:*)",
+      "Bash(git reset:*)"
     ]
   },
   "enableAllProjectMcpServers": true

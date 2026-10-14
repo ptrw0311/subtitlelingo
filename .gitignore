@@ -72,3 +72,10 @@ n8n-mcp-server.js
 
 # Playwright 測試輸出
 e2e/.results/
+
+# Python 位元碼快取
+__pycache__/
+*.pyc
+
+# agentflow 修改設定前的自動備份
+.claude/*.agentflow-backup

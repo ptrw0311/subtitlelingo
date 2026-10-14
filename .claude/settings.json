@@ -67,5 +67,17 @@
       "Bash(dir:*)"
     ]
   },
-  "enableAllProjectMcpServers": true
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node 'C:\\Users\\fenc07837\\.claude\\plugins\\cache\\agentflow\\agentflow\\8.4.15\\skills\\agentflow\\scripts\\stop-hook.js' --host claude"
+          }
+        ]
+      }
+    ]
+  }
 }
