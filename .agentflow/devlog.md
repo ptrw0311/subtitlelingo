@@ -6,15 +6,15 @@ Notebook: .agentflow/devlog.md — root.
 
 Current commit: local delivery recorded in Git history.
 
-Tests/scenarios: npm test 58/58；Playwright 14/14；正式站 /api/query 部署前後探測.
+Tests/scenarios: npm test 58/58；Playwright 14/14；正式站 /api/query 部署後探測（任意 SQL 回 400、具名查詢回真實資料）.
 
 Configuration: ag.json — schema v8; validated for claude this round.
 
-Proven: main 已推送到 GitHub；Vercel 正式站仍為舊版.
+Proven: Vercel 正式部署完成（dpl_FPrA9PhpCwH1CaasNWmreZJKBhh7），https://subtitlelingo.vercel.app 已運行新版並通過生產驗證.
 
-Open: Vercel CLI 未登入，正式部署未完成.
+Open: none.
 
-Next: 使用者執行 vercel login 後部署並驗證正式站.
+Next: await the owner.
 
 Artifacts: .agentflow/artifacts/A-006-100ls-impl/tracker.md.
 
@@ -710,5 +710,44 @@ Streams: none.
 ---
 
 # → Ask / A-009 (peter wang)
+
++ 請佈署到vercel
+
+---
+
+## [RUN-001] Event — 2026-10-14 10:27:48 +0800 (A-009)
+
+1. 確認 Vercel CLI 登入狀態：auth.json 仍空、vercel whoami 顯示未登入，改在背景執行 `vercel login` 並提供裝置驗證網址，使用者在瀏覽器完成確認（代碼 WMFT-SFHW），登入帳號 ptrw0311-8713。
+2. 釐清專案對應：`vercel inspect subtitlelingo.vercel.app` 顯示正式別名指向專案 `subtitlelingo`（2026-01-08 的舊部署）；本機 .vercel/project.json 雖記錄專案名 `subtitlelingo-api`，但 `vercel ls` 確認同一 projectId 解析為 `subtitlelingo`（專案曾改名），即正式網址背後的同一個專案。
+3. 部署前檢查：.gitignore 已涵蓋 .env、node_modules、dist，本地 .env 不會上傳；app 程式碼已全部提交（HEAD fd70795）。
+4. 執行 `vercel deploy --prod --yes`：建置成功（index-DRu13qaY.js / index-DUlsb5r3.css），部署 dpl_FPrA9PhpCwH1CaasNWmreZJKBhh7，別名 https://subtitlelingo.vercel.app 已切換。
+5. 生產驗證：(a) 舊式任意 SQL `{"query":"SELECT * FROM movies"}` 回 HTTP 400 "Unknown query name"（白名單生效）；(b) 具名查詢 movies.count 回 {"data":[{"count":7}]}；(c) movies.getAll 回真實片單；(d) 正式站 HTML 引用的 asset 雜湊與本次遠端建置完全一致。
+
+# ← Reply / A-009
+
+* _2026-10-14 10:27:48 +0800 (claude/unknown)_
+
+## [SUMMARY]
+
+- 已完成 Vercel 正式部署：https://subtitlelingo.vercel.app 運行新版，任意 SQL 被拒（HTTP 400）、具名查詢正常回真實資料、前端為本次建置版本。
+
+## [FINAL REPORT]
+
+1. 「請佈署到vercel」
+
+   - **完成。** 使用者在瀏覽器完成 Vercel 裝置登入（帳號 ptrw0311-8713）後，以 `vercel deploy --prod --yes` 部署到正式環境，部署識別 dpl_FPrA9PhpCwH1CaasNWmreZJKBhh7。
+
+   - 專案對應已釐清：本機 .vercel/project.json 記錄的專案（原名 subtitlelingo-api）與正式網址背後的 `subtitlelingo` 是同一個專案（改過名、projectId 相同），沒有部署到錯的專案。
+
+   - 生產驗證：舊式任意 SQL 已被拒（HTTP 400 "Unknown query name"，白名單生效）；具名查詢 movies.count 回 7 部片；movies.getAll 回真實片單；正式站 HTML 引用的 JS/CSS 雜湊（DRu13qaY／DUlsb5r3）與本次遠端建置一致。
+
+   - 注意：此專案的 Vercel 未連接 GitHub 自動部署（推送到 GitHub 不會觸發部署），之後更新要再跑 `vercel deploy --prod`，或到 Vercel 後台把專案接上 GitHub 倉庫。
+
+   - 本輪未變更任何應用程式碼；工作區中既有變更屬本地工具設定與快取，與網站行為無關（申報如下）。
+
+
+---
+
+# → Ask / A-010 (peter wang)
 
 +
