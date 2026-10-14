@@ -6,17 +6,17 @@ Notebook: .agentflow/devlog.md — root.
 
 Current commit: local delivery recorded in Git history.
 
-Tests/scenarios: npm test 58/58；Playwright 14/14；本機站實測讀取、寫入阻擋、任意 SQL 拒絕.
+Tests/scenarios: npm test 58/58；Playwright 14/14；正式站 /api/query 部署前後探測.
 
 Configuration: ag.json — schema v8; validated for claude this round.
 
-Proven: 本機預覽可用真實資料，預設只讀.
+Proven: main 已推送到 GitHub；Vercel 正式站仍為舊版.
 
-Open: 等待使用者本機試用後決定部署.
+Open: Vercel CLI 未登入，正式部署未完成.
 
-Next: 使用者確認後推送 GitHub 並部署 Vercel.
+Next: 使用者執行 vercel login 後部署並驗證正式站.
 
-Artifacts: .agentflow/artifacts/A-007-local-preview/review.md, .agentflow/artifacts/A-006-100ls-impl/tracker.md.
+Artifacts: .agentflow/artifacts/A-006-100ls-impl/tracker.md.
 
 Archived eras: none.
 
@@ -648,5 +648,67 @@ Streams: none.
 ---
 
 # → Ask / A-008 (peter wang)
+
++ 請部署到vercel
+
++ 打上 MCQVRSDQ
+
+---
+
+## [RUN-001] Event — 2026-10-14 09:44:16 +0800 (A-008)
+
+- 推送 main 到 GitHub 成功（e74e401..08cca5e）。
+
+## [RUN-002] Event — 2026-10-14 09:44:16 +0800 (A-008)
+
+- 等候 5 分鐘以上，subtitlelingo.vercel.app 的 /api/query 仍回舊版「SQL query is required」；推送不會自動觸發 Vercel 部署。本機連結的 Vercel 專案名稱為 subtitlelingo-api。
+
+## [RUN-003] Event — 2026-10-14 09:44:16 +0800 (A-008)
+
+- Vercel CLI 未登入：執行時要求裝置登入，每次產生新代碼；MCQVRSDQ 屬於已停止的那次嘗試，已失效。
+
+# ← Reply / A-008
+
+* _2026-10-14 09:44:16 +0800 (claude/unknown)_
+
+## [SUMMARY]
+
+- **還沒部署到 Vercel**：程式已推送到 GitHub，但 Vercel 沒有自動部署，正式站仍是舊版。我這邊的 Vercel 指令沒有登入，需要你先登入一次，我才能部署。
+
+- 你提供的代碼 MCQVRSDQ 已失效：它屬於我先前中斷的那次登入嘗試，每次登入都會產生新代碼。
+
+## [FINAL REPORT]
+
+1. 「請部署到vercel」
+
+   - **部分完成，部署被擋住。**
+
+   - **已完成：** 13 個本機提交已推送到 GitHub 的 main 分支（e74e401..08cca5e）。推送也會照原本設定觸發 GitHub Pages 的自動部署。
+
+   - **沒有完成：** 推送後等了 5 分鐘以上，正式站 https://subtitlelingo.vercel.app 的後端仍回應舊版訊息「SQL query is required」，表示 Vercel 沒有因為推送而重新部署。這個專案的 Vercel 似乎沒有連到 GitHub 自動部署，要用 Vercel 指令手動部署。
+
+   - **卡住的原因：** 這台電腦的 Vercel 指令沒有登入。登入要在瀏覽器確認，我無法替你完成。
+
+   - **注意：** 本機資料夾連結的 Vercel 專案叫 `subtitlelingo-api`，不一定就是正式網址 subtitlelingo.vercel.app 背後的專案。登入後我會先查清楚專案對應，再部署到正確的專案。
+
+   - **正式站目前的狀態：** 前端和後端都還是舊版，彼此相容，網站照常運作。
+
+2. 「打上 MCQVRSDQ」
+
+   - 這看起來是 Vercel 裝置登入的代碼。它屬於我先前執行、後來因為卡住而中斷的那次登入，那次登入已經結束，代碼也就失效了。我重新檢查時，Vercel 產生了另一組代碼，表示目前仍未登入。
+
+   - 如果你指的是別的意思（例如要打上 Git 標籤），請告訴我。
+
+## Questions (batched — each with a suggested default)
+
+1. 請在這個對話輸入 `! vercel login` 完成登入（會開瀏覽器讓你確認），登入後告訴我「已登入」，我就查清楚專案對應並部署到正式站，可以嗎？
+
+   - Suggested default: 可以；登入後我執行正式部署，並用實際請求確認正式站已換成新版。
+
+   - ans:
+
+---
+
+# → Ask / A-009 (peter wang)
 
 +
